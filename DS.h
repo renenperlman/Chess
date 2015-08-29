@@ -27,7 +27,7 @@ typedef struct {
 	pos position;
 	char singleMove; // 0 - piece can move multiple times in the same direction, 1 - can't
 	int numOfDirections; // the number of possible directions the piece can move
-	int* directions; // an arry with the directions the piece can move in (using 10x12 mailbox)
+	int directions[]; // an arry with the directions the piece can move in (using 10x12 mailbox)
 }piece;
 
 typedef struct {
@@ -45,5 +45,5 @@ listNode* newNode(void*, size_t); // guess what this one does??
 void insertNode(linkedList*, listNode*); // adds the node to the begining of the list
 int posToInd(pos); // returns the mailbox number of the given location
 pos indToPos(int); // returns the position of the given mailbox number
-move* newMove()
+move* newMove(piece*, pos);
 

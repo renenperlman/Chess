@@ -44,5 +44,12 @@
 #define perror_message(func_name) (perror("Error: standard function %s has failed", func_name));
 #define print_message(message) (printf("%s", message));
 
+#define WHITE 1
+#define BLACK 0
+
+int whiteCheck = 0; // a flag indicating if the white player is in check
+int blackCheck = 0; // a flag indicating if the black player is in check
+
+int minimaxDepth = 1;
 
 #endif CHESS_

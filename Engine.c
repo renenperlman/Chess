@@ -10,6 +10,7 @@ int colorOfLoc(char* board, int ind){
 	return 1;
 }
 
+/*adds to the list nodes containing all the possible moves by the given piece*/
 void genMoves(piece *p, linkedList *moves, char board[]){
 	if (p->type!='p')
 	{
@@ -21,7 +22,8 @@ void genMoves(piece *p, linkedList *moves, char board[]){
 				ind += p->directions[i];
 				if (board[ind] == OUT_OF_BOARD) break;
 				if (colorOfLoc(board, ind) == p->color) break;
-				insertNode((newMove(p, indToPos(ind)), sizeof(move)), moves); // a possible move - add it to the list
+				int capture = board[ind] == EMPTY ? 0 : 1;
+				insertNode(moves,newNode(newMove(p, indToPos(ind), capture), sizeof(move))); // a possible move - add it to the list
 				if (p->singleMove) break; // continue to new direction
 			}
 		}
@@ -30,19 +32,87 @@ void genMoves(piece *p, linkedList *moves, char board[]){
 	{
 		int ind = posToInd(p->position);
 		if (board[ind + p->directions[0]]==EMPTY) // make a step forward
-			insertNode((newMove(p, indToPos(ind + p->directions[0])), sizeof(move)), moves);
+			insertNode(moves,newNode(newMove(p, indToPos(ind + p->directions[0]),0), sizeof(move)));
 		for (int i = 1; i < 2; i++)
 		{
 			if (colorOfLoc(board, ind + p->directions[i]) != p->color) // capture
-				insertNode((newMove(p, indToPos(ind + p->directions[i])), sizeof(move)), moves);
+				insertNode(moves,newNode(newMove(p, indToPos(ind + p->directions[i]),1), sizeof(move)));
 		}
 	}
 }
 
-int score(piece *pieces,int player){
+/*returns a list containing all the possible moves by the given player*/
+linkedList* getMoves(piece *pieces, char* board, int player){
+	linkedList* moves = newLinkedList();
+	for (int i = 0; i < 16; i++){
+		if (pieces[i].captured || pieces[i].color!=player)
+		{
+			continue;
+		}
+		genMoves(pieces + i, moves, board);
+	}
+	if (isCheck(pieces,board,player))
+	{
+		updateMoveList(moves, pieces, player, board);
+	}
+	return moves;
+}
+/* assumes that the given player is in check,
+remove all moves that keeps in him check*/
+void makeMove(move* m, piece* pieces, char* board){
+	pos position = m->p->position;
+	int ind = posToInd(position);
+	board[ind] = EMPTY; // update board
+	pos dest = m->dest;
+	int destInd = posToInd(dest);
+	board[destInd] = m->p->type; // update board
+	if (m->capture){
+		for (int i = 0; i < 16; i++){ // update pieces array
+			if (compPos(pieces[i].position, dest))
+			{
+				pieces[i].captured = 1; // update captured piece
+				break;
+			}
+		}
+	}
+	m->p->position = dest; // update moving piece postion
+}
+
+void updateMoveList(linkedList* moves, piece* pieces, int player, char* board){
+	listNode* prev = NULL;
+	listNode* curr = moves->first;
+	while (curr->next!=NULL)
+	{
+		char* newBoard = (char*)cloneData(board, 120 * sizeof(char));
+		piece* newPieces = (piece*)cloneData(pieces, 16 * sizeof(piece));
+		makeMove((move*)curr->data, newPieces, newBoard);
+		if (isCheck(newPieces,newBoard,player))
+		{
+			curr = removeNode(moves, prev, curr);
+		}
+		prev = curr;
+		curr = curr->next;
+		free(newBoard);
+		free(newPieces);
+	}
+}
+
+int score(piece *pieces,char* board, int player){
+	if (isCheck(pieces, board, player) && getMoves(pieces, board, player)->first==NULL)
+	{
+		return 400;
+	}
+	if (isCheck(pieces, board, 1-player) && getMoves(pieces, board, 1-player)->first == NULL)
+	{
+		return -400;
+	}
 	int score = 0;
 	for (int i = 0; i < 16; i++)
 	{
+		if (pieces[i].captured)
+		{
+			continue;
+		}
 		if (pieces[i].type == 'p')
 			score += 1 * (2 * pieces[i].color-1);
 		else if (pieces[i].type == 'k' || pieces[i].type == 'b')
@@ -54,27 +124,67 @@ int score(piece *pieces,int player){
 		else 
 			score += 400 * (2 * pieces[i].color - 1);
 	}
-	return player ? score : -1 * score;
+	return player==WHITE ? score : -1 * score;
 }
 
-piece* newWhiteP(pos position ){
-	piece *whiteP = (piece*)malloc(sizeof(piece));
-	whiteP->color = 1;
-	whiteP->directions = WHITE_P_DIRECTIONS;
-	whiteP->moved = 0;
-	whiteP->numOfDirections = 3;
-	whiteP->position = position;
-	whiteP->singleMove = 1;
-	whiteP->type = 'p';
+/*promote the given pawn to the given type*/
+void promote(piece* p, char type){
+	p->type = type;
+	if (type == WHITE_B || type == BLACK_B)
+	{
+		p->directions = B_DIRECTIONS;
+		p->numOfDirections = 4;
+		p->singleMove = 0;
+	}
+	else if (type == WHITE_N || type == BLACK_N)
+	{
+		p->directions = N_DIRECTIONS;
+		p->numOfDirections = 8;
+	}
+	else if (type == WHITE_Q || type == BLACK_Q)
+	{
+		p->directions = QnK_DIRECTIONS;
+		p->numOfDirections = 8;
+		p->singleMove = 0;
+	}
+	else{
+		p->directions = R_DIRECTIONS;
+		p->numOfDirections = 4;
+		p->singleMove = 0;
+	}
 }
 
-piece* newWhiteB();
-piece* newWhiten();
-piece* newWhiteR();
-piece* newWhiteQ();
-piece* newWhiteK();
-piece* newBlackP();
-piece* newBlackB();
-piece* newBlackN();
-piece* newBlackR();
-piece* newBlackK();
+/*returns 1 if the given player threaten the given position
+otherwise, return 0*/
+int isThreat(pos p, piece* pieces, char* board, int player){
+	linkedList* moves = newLinkedList();
+	for (int i = 0; i < 16; i++){
+		if (pieces[i].captured || pieces[i].color != player)
+		{
+			continue;
+		}
+		genMoves(pieces + i, moves, board);
+	}
+	listNode* node = moves->first;
+	while (node!=NULL)
+	{
+		if (compPos(((move*)node->data)->dest, p) == 1)
+			return 1;
+		node = node->next;
+	}
+	return 0;
+}
+
+/*returns 1 if the given player is in check in the given board*/
+int isCheck(piece* pieces, char* board, int player){
+	char type = player ? WHITE_K : BLACK_K;
+	pos kingPos;
+	for (int i = 0; i < 16; i++)
+	{
+		if (pieces[i].type == type){
+			kingPos = pieces[i].position;
+			break;
+		}
+	}
+	return isThreat(kingPos, pieces, board, 1 - player);
+}

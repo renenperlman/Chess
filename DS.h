@@ -1,15 +1,25 @@
-﻿#include <stdio.h>
-#include <stdlib.h>
+﻿#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
 #include "Chess.h"
 
 #define OUT_OF_BOARD -1
 
+#define WHITE_P_DIRECTIONS  { -10, -9, -11 }
+#define BLACK_P_DIRECTIONS { 10, 9, 11 }
+#define N_DIRECTIONS { -21, -19, -12, -8, 8, 12, 19, 21 }
+#define B_DIRECTIONS { -11, -9, 9, 11 }
+#define R_DIRECTIONS { -10, -1, 1, 10 }
+#define QnK_DIRECTIONS { -11, -10, -9, -1, 1, 9, 10, 11 }
+
 /* The basic data structers we use*/
-typedef struct {
+struct listNode{
 	void *data;
 	struct listNode *next;
 	size_t size;
-}listNode;
+};
+
+typedef struct listNode listNode;
 
 typedef struct {
 	listNode *first;
@@ -53,4 +63,12 @@ pos indToPos(int); // returns the position of the given mailbox number
 move* newMove(piece*, pos,int);
 linkedList* newLinkedList();
 int compPos(pos, pos); // returns 1 if same position, o.w. 0
+int isLegalPos(pos); // returns 1 if the position is legal, o.w. 0
+piece* newPiece(char, int, pos);
+void printMove(move *);
+void printMoves(linkedList*);
+void initMailBox120();
+
+extern int mailbox[];
+
 

@@ -1,24 +1,40 @@
 ﻿#include "Minimax.h"
 
-int alphabeta(char* board, piece* pieces, int player, int alpha, int beta, int depth, int isMax, int (score)(piece*, char*, int),
-	linkedList* (getMoves)(piece*, char[], int), void (makeMove)(move*, piece*, char[])){
+int alphabeta(char* board, piece* pieces, int player, int alpha, int beta, int depth, int isMax ,int firstCall, int **scores){
 	linkedList* moves = getMoves(pieces, board, player);
 	if (depth == 0 || moves->first==NULL)
 	{
 		freeList(moves);
 		return score(pieces, board, player);
 	}
-	
+	if (firstCall)
+	{
+		int cnt = 0;
+		listNode *node = moves->first;
+		while (node!=NULL)
+		{
+			node = node->next;
+			cnt++;
+		}
+		*scores = (int*)malloc(cnt*sizeof(int));
+	}
 	if (isMax)
 	{
-		int v = INT_MIN;
+		int v = INT_MIN, i = 0,v2;
 		listNode* node = moves->first;
 		while (node!=NULL)
 		{
-			char* newBoard = (char*)cloneData(board, 120 * sizeof(char));
-			piece* newPieces = (piece*)cloneData(pieces, 16 * sizeof(piece));
+			char* newBoard = (char*)malloc(120 * sizeof(char));
+			memcpy(newBoard, board, 120 * sizeof(char));
+			piece* newPieces = (piece*)malloc(NUMOFPIECES * sizeof(piece));
+			memcpy(newPieces, pieces, NUMOFPIECES * sizeof(piece));
 			makeMove((move*)node->data, newPieces, newBoard);
-			v = max(v, alphabeta(newBoard, newPieces, 1 - player, alpha, beta, depth - 1, 0, score, getMoves, makeMove));
+			v2 = alphabeta(newBoard, newPieces, 1 - player, alpha, beta, depth - 1, 0, 0, scores);
+			if (firstCall){
+				(*scores)[i] = v2;
+				i++;
+			}
+			v = max(v, v2);
 			free(newBoard);
 			free(newPieces);
 			alpha = max(v, alpha);
@@ -36,10 +52,12 @@ int alphabeta(char* board, piece* pieces, int player, int alpha, int beta, int d
 		listNode* node = moves->first;
 		while (node != NULL)
 		{
-			char* newBoard = (char*)cloneData(board, 120 * sizeof(char));
-			piece* newPieces = (piece*)cloneData(pieces, 16 * sizeof(piece));
+			char* newBoard = (char*)malloc(120 * sizeof(char));
+			memcpy(newBoard, board, 120 * sizeof(char));
+			piece* newPieces = (piece*)malloc(NUMOFPIECES * sizeof(piece));
+			memcpy(newPieces, pieces, NUMOFPIECES * sizeof(piece));
 			makeMove((move*)node->data, newPieces, newBoard);
-			v = min(v, alphabeta(newBoard, newPieces, 1 - player, alpha, beta, depth - 1, 1, score, getMoves, makeMove));
+			v = min(v, alphabeta(newBoard, newPieces, 1 - player, alpha, beta, depth - 1, 1, 0, scores));
 			free(newBoard);
 			free(newPieces);
 			beta = max(v, alpha);
@@ -51,4 +69,29 @@ int alphabeta(char* board, piece* pieces, int player, int alpha, int beta, int d
 		freeList(moves);
 		return v;
 	}
+}
+
+linkedList *getBestMoves(char *board, piece *pieces, int player, int depth){
+	linkedList *bestMoves = newLinkedList();
+	int *scores = NULL, best = alphabeta(board, pieces, player, INT_MIN, INT_MAX, depth, 1, 1, &scores);
+	linkedList* moves = getMoves(pieces, board, player);
+	int cnt = 0;
+	listNode *node = moves->first;
+	while (node != NULL)
+	{
+		node = node->next;
+		cnt++;
+	}
+	node = moves->first;
+	for (int i = 0; i < cnt; i++)
+	{
+		if (scores[i] == best)
+		{
+			insertNode(bestMoves, cloneNode(node));
+			node = node->next;
+		}
+	}
+	freeList(moves);
+	free(scores);
+	return bestMoves;
 }

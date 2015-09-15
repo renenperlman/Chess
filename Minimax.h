@@ -1,4 +1,4 @@
-﻿#include "DS.h"
+﻿#include "Engine.h"
 
-int alphabeta(char*, piece*, int, int, int, int, int, int (score)(piece*, char*, int),
-	linkedList* (getMoves)(piece*, char[], int), void (makeMove)(move*, piece*, char[]));
+linkedList *getBestMoves(char*, piece*, int,int);
+int alphabeta(char* , piece* , int , int , int , int , int , int , int **);

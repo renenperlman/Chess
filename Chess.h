@@ -1,7 +1,7 @@
 #ifndef CHESS_
 #define CHESS_
 
-#include<stdio.h>
+#include <stdio.h>
 
 #define WHITE_P 'm'
 #define WHITE_B 'b'
@@ -21,6 +21,7 @@
 #define EMPTY ' '
 
 #define BOARD_SIZE 8
+#define NUMOFPIECES 32
 
 // board initialization
 #define ENTER_SETTINGS "Enter game settings:\n" 
@@ -35,11 +36,16 @@
 
 #define ILLEGAL_COMMAND "Illegal command, please try again\n"
 #define ILLEGAL_MOVE "Illegal move\n"
+
+#define WRONG_PIECE "The specified position does not contain your piece\n"
  
 #define WRONG_ROOK_POSITION "Wrong position for a rook\n" 
 #define ILLEGAL_CALTLING_MOVE "Illegal castling move\n"  
 
+#define WHITE_WINS "Mate! White player wins the game\n"
+#define BLACK_WINS "Mate! Black player wins the game\n"
 #define TIE "The game ends in a tie\n"
+#define CHECK "Check!\n"
  
 #define perror_message(func_name) (perror("Error: standard function %s has failed", func_name));
 #define print_message(message) (printf("%s", message));
@@ -47,9 +53,5 @@
 #define WHITE 1
 #define BLACK 0
 
-int whiteCheck = 0; // a flag indicating if the white player is in check
-int blackCheck = 0; // a flag indicating if the black player is in check
-
-int minimaxDepth = 1;
 
 #endif CHESS_

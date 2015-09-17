@@ -1,9 +1,9 @@
 ﻿#include "Console.h"
 
-int gameMode = 1;
-int depth = 1;
-int userColor = WHITE;
-int nextPlayer = WHITE;
+gameMode = 1;
+depth = 1;
+userColor = WHITE;
+nextPlayer = WHITE;
 char board[120] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 					-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 					-1, 'R','N','B','Q','K','B','N','R',-1,
@@ -21,13 +21,14 @@ piece pieces[NUMOFPIECES];
 
 void initPieces(){
 	int i = 0;
-	for (; i < 9; i++)
+	for (; i < 8; i++)
 	{
 		pos position = { i + 'a', 2 };
 		pieces[i] = *(newPiece('m', WHITE, position)); // init white pawns
 		position.y = 7;
 		pieces[i+16] = *newPiece('M', BLACK, position); // init black pawns
 	}
+	i = 8;
 	pos position = { 'a', 1 };
 	pieces[i] = *newPiece('r', WHITE, position);
 	position.x++;
@@ -53,7 +54,7 @@ void initPieces(){
 	pieces[i] = *newPiece('r', WHITE, position);
 	position.x = 'a';
 	position.y = 8;
-	i += 8;
+	i += 9;
 	pieces[i] = *newPiece('r', BLACK, position);
 	position.x++;
 	i++;
@@ -226,6 +227,7 @@ int settingMode(){
 	int ch;
 	while (1)
 	{
+		print_message(ENTER_SETTINGS);
 		int cnt = 0;
 		while (EOF != (ch = fgetc(fp)) && ch != '\n'){
 			input[cnt++] = ch;
@@ -288,34 +290,35 @@ int settingMode(){
 			}
 			for (int i = 0; i < NUMOFPIECES; i++)
 			{
-				if (compPos(pieces[i].position,p))
-				{
-					pieces[i].captured = 0;
-					break;
-				}
-			}
-			board[posToInd(p)] = EMPTY;
-		}
-		else if (strncmp(input, "set", 3) == 0){ // set
-			pos p = { input[5], input[7] - '0' };
-			if (!isLegalPos(p))
-			{
-				print_message(WRONG_POSITION);
-				continue;
-			}
-			for (int i = 0; i < NUMOFPIECES; i++)
-			{
 				if (compPos(pieces[i].position, p) && pieces[i].captured == 0)
 				{
 					pieces[i].captured = 1;
 					break;
 				}
 			}
+			board[posToInd(p)] = EMPTY;
+		}
+		else if (strncmp(input, "set", 3) == 0){ // set
+			pos p = { input[5], input[7] - '0' };	// get the position from the input
+			if (!isLegalPos(p))	// illegal pos
+			{
+				print_message(WRONG_POSITION);
+				continue;
+			}
+			for (int i = 0; i < NUMOFPIECES; i++)
+			{
+				if (compPos(pieces[i].position, p) && pieces[i].captured == 0) 
+				{
+					pieces[i].captured = 1;	// remove the piece from the pos
+					break;
+				}
+			}
 			int color = input[10] == 'w' ? WHITE : BLACK;
 			int flag = 0;
-			char type = (input[16] == 'k' && input[17] == 'n') ? 'n' : input[16];
-			type = color == WHITE ? (char)tolower(type) : (char)toupper(type);
-			for (int i = 0; i < NUMOFPIECES; i++)
+			char type = (input[16] == 'k' && input[17] == 'n') ? 'n' : input[16]; // get the type from the input
+			type = type == 'p' ? 'm' : type;
+			type = color == WHITE ? (char)tolower(type) : (char)toupper(type); // change case according to the color
+			for (int i = 0; i < NUMOFPIECES; i++) // search for a free piece of the given type
 			{
 				if (pieces[i].color == color && pieces[i].type == type && pieces[i].captured == 1)
 				{
@@ -327,8 +330,8 @@ int settingMode(){
 					break;
 				}
 			}
-			if (!flag){
-				print_message(NO_PIECE);
+			if (!flag){	// couldnt find a free piece of the given type
+				print_message(NO_PIECE); // illegal board
 			}
 		}
 		else if ((strncmp(input, "print", 5) == 0)){
@@ -350,6 +353,17 @@ int settingMode(){
 				print_message(WROND_BOARD_INITIALIZATION);
 				flag = 1;
 			}
+			else if (!flag && isCheck(pieces,board,1 - nextPlayer)) // the other player is in check 
+				// (that means that the next player can move and capture the king)
+			{
+				print_message(WROND_BOARD_INITIALIZATION);
+				flag = 1;
+			}
+			/*else if (!flag && getMoves(pieces, board, 1 - nextPlayer)->first == NULL) // mate or tie board
+			{
+				print_message(WROND_BOARD_INITIALIZATION);
+				flag = 1;
+			}*/
 			if (!flag){ // can start the game
 				return 0;
 			}
@@ -370,7 +384,7 @@ returns 1 if the game is over, otherwise returns 0*/
 int userTurn(int player){
 	char* color = player == WHITE ? "White" : "Black";
 	print_message(color);
-	print_message(" player - enter your move : \n");
+	print_message(" player - enter your move: \n");
 	FILE *fp = stdin;
 	char input[51];
 	int ch;
@@ -424,7 +438,7 @@ int userTurn(int player){
 			printMoves(bestMoves);
 			freeList(bestMoves);
 		}
-		else if (strncmp(input, "get_score", 14) == 0) // get scores
+		else if (strncmp(input, "get_score", 9) == 0) // get scores
 		{
 			int d = input[10] - '1';
 			char* newBoard = (char*)malloc(120 * sizeof(char));
@@ -438,7 +452,7 @@ int userTurn(int player){
 			free(newBoard);
 			free(newPieces);
 			free(m);
-			return score;
+			printf("%d\n", score);
 		}
 		else if (strncmp(input, "quit", 4) == 0){
 			return 1;
@@ -455,12 +469,12 @@ int userTurn(int player){
 int compTurn(){
 	linkedList *bestMoves = getBestMoves(board, pieces, 1 - userColor, depth);
 	move *m = bestMoves->first->data;
-	makeMove(m, pieces, board);
 	print_message("Computer: move ");
 	printMove(m);
+	makeMove(m, pieces, board);
 	free(m);
-	print_board(board);
 	freeList(bestMoves);
+	print_board(board);
 	return endGamePrint(1 - userColor);
 }
 
@@ -468,7 +482,6 @@ int consoleMode(){
 	initPieces();
 	initMailBox120();
 	print_board(board);
-	print_message(ENTER_SETTINGS);
 	int n = settingMode();
 	while (n==0)
 	{

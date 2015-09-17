@@ -30,6 +30,7 @@ void genMoves(piece *p, linkedList *moves, char board[]){
 				if (colorOfLoc(board, ind) == p->color) break;
 				int capture = board[ind] == EMPTY ? 0 : 1;
 				insertNode(moves,newNode(newMove(p, indToPos(ind), capture), sizeof(move))); // a possible move - add it to the list
+				if (capture) break;
 				if (p->singleMove) break; // continue to new direction
 			}
 		}
@@ -81,13 +82,19 @@ void makeMove(move* m, piece* pieces, char* board){
 			}
 		}
 	}
-	m->p->position = dest; // update moving piece postion
+	for (int i = 0; i < NUMOFPIECES; i++){ 
+		if (compPos(pieces[i].position, m->p->position) && !pieces[i].captured)
+		{
+			pieces[i].position = dest; // update moving piece postion
+			break;
+		}
+	}
 }
 
 void updateMoveList(linkedList* moves, piece* pieces, int player, char* board){
 	listNode *prev = NULL;
 	listNode *curr = moves->first;
-	while (curr->next!=NULL)
+	while (curr != NULL)
 	{
 		char* newBoard = (char*)malloc(120 * sizeof(char));
 		memcpy(newBoard, board, 120 * sizeof(char));
@@ -98,8 +105,11 @@ void updateMoveList(linkedList* moves, piece* pieces, int player, char* board){
 		{
 			curr = removeNode(moves, prev, curr);
 		}
-		prev = curr;
-		curr = curr->next;
+		else
+		{
+			prev = curr;
+			curr = curr->next;
+		}
 		free(newBoard);
 		free(newPieces);
 	}
@@ -112,7 +122,7 @@ int score(piece *pieces,char* board, int player){
 		}
 		else // not in check
 		{
-			return -400; // tie
+			return -0; // tie
 		}
 	}
 	if (getMoves(pieces, board, player)->first == NULL){ // no possible moves
@@ -121,7 +131,7 @@ int score(piece *pieces,char* board, int player){
 		}
 		else // not in check
 		{
-			return -400; // tie
+			return -0; // tie
 		}
 	}
 	int score = 0;
@@ -131,13 +141,14 @@ int score(piece *pieces,char* board, int player){
 		{
 			continue;
 		}
-		if (pieces[i].type == 'p')
-			score += 1 * (2 * pieces[i].color-1);
-		else if (pieces[i].type == 'k' || pieces[i].type == 'b')
+		char type = pieces[i].type;
+		if (type == WHITE_P || type == BLACK_P)
+			score += 1 * (2 * pieces[i].color - 1);
+		else if (type == WHITE_N || type == BLACK_N || type == WHITE_B || type == BLACK_B)
 			score += 3 * (2 * pieces[i].color - 1);
-		else if (pieces[i].type == 'r')
+		else if (type == WHITE_R || type == BLACK_R)
 			score += 5 * (2 * pieces[i].color - 1);
-		else if (pieces[i].type == 'q')
+		else if (type == WHITE_Q || type == BLACK_Q)
 			score += 9 * (2 * pieces[i].color - 1);
 		else 
 			score += 400 * (2 * pieces[i].color - 1);

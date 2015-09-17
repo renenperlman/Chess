@@ -30,7 +30,7 @@ void initMailBox120(){
 
 
 void freeNode(listNode* node){
-	free(node->data);
+	//free(node->data);
 	free(node);
 }
 void freeList(linkedList* list){

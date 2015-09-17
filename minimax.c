@@ -5,7 +5,7 @@ int alphabeta(char* board, piece* pieces, int player, int alpha, int beta, int d
 	if (depth == 0 || moves->first==NULL)
 	{
 		freeList(moves);
-		return score(pieces, board, player);
+		return isMax ? score(pieces, board, player) : score(pieces, board, 1 - player);
 	}
 	if (firstCall)
 	{
@@ -42,6 +42,7 @@ int alphabeta(char* board, piece* pieces, int player, int alpha, int beta, int d
 			{
 				break;
 			}
+			node = node->next;
 		}
 		freeList(moves);
 		return v;
@@ -65,6 +66,7 @@ int alphabeta(char* board, piece* pieces, int player, int alpha, int beta, int d
 			{
 				break;
 			}
+			node = node->next;
 		}
 		freeList(moves);
 		return v;
@@ -88,8 +90,8 @@ linkedList *getBestMoves(char *board, piece *pieces, int player, int depth){
 		if (scores[i] == best)
 		{
 			insertNode(bestMoves, cloneNode(node));
-			node = node->next;
 		}
+		node = node->next;
 	}
 	freeList(moves);
 	free(scores);

@@ -54,4 +54,9 @@
 #define BLACK 0
 
 
+extern int gameMode;
+extern int depth;
+extern int userColor;
+extern int nextPlayer;
+
 #endif CHESS_

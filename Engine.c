@@ -103,7 +103,7 @@ void updateMoveList(linkedList* moves, piece* pieces, int player, char* board){
 		makeMove((move*)curr->data, newPieces, newBoard);
 		if (isCheck(newPieces,newBoard,player))
 		{
-			curr = removeNode(moves, prev, curr);
+			curr = removeNode(moves, prev, curr,1);
 		}
 		else
 		{
@@ -116,21 +116,26 @@ void updateMoveList(linkedList* moves, piece* pieces, int player, char* board){
 }
 
 int score(piece *pieces,char* board, int player){
-	if (getMoves(pieces, board, 1 - player)->first == NULL){ // no possible moves for other player
+	linkedList *moves = getMoves(pieces, board, 1 - player);
+	if (moves->first == NULL){ // no possible moves for other player
 		if (isCheck(pieces, board, 1 - player)){ // check
+			freeList(moves,1);
 			return 500; // the player wins
 		}
 		else // not in check
 		{
+			freeList(moves, 1);
 			return -0; // tie
 		}
 	}
-	if (getMoves(pieces, board, player)->first == NULL){ // no possible moves
+	if (moves->first == NULL){ // no possible moves
 		if (isCheck(pieces, board, player)){ // check
+			freeList(moves, 1);
 			return -500; // the player lost
 		}
 		else // not in check
 		{
+			freeList(moves, 1);
 			return -0; // tie
 		}
 	}
@@ -153,6 +158,7 @@ int score(piece *pieces,char* board, int player){
 		else 
 			score += 400 * (2 * pieces[i].color - 1);
 	}
+	freeList(moves, 1);
 	return player==WHITE ? score : -1 * score;
 }
 
@@ -201,10 +207,13 @@ int isThreat(pos p, piece* pieces, char* board, int player){
 	listNode* node = moves->first;
 	while (node!=NULL)
 	{
-		if (compPos(((move*)node->data)->dest, p) == 1)
+		if (compPos(((move*)node->data)->dest, p) == 1){
+			freeList(moves, 1);
 			return 1;
+		}
 		node = node->next;
 	}
+	freeList(moves, 1);
 	return 0;
 }
 

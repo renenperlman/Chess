@@ -1,4 +1,8 @@
-﻿#include <stdlib.h>
+﻿#ifndef DS_
+#define DS_
+
+
+#include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include "Chess.h"
@@ -48,14 +52,14 @@ typedef struct {
 }move;
 
 /* Prototype for basic functions */
-void freeNode(listNode*); // frees the given node and also its data
-void freeList(linkedList*); // frees the given linked list
+void freeNode(listNode*,char); // frees the given node and also its data
+void freeList(linkedList*,char); // frees the given linked list
 void* cloneData(void*, size_t); // copy the content of the given pointer
 listNode* cloneNode(listNode*); // copies the given node and its data
 linkedList* cloneLinkedList(linkedList*); // copies the given linked list
 listNode* newNode(void*, size_t); // guess what this one does??
 void insertNode(linkedList*, listNode*); // adds the node to the begining of the list
-listNode* removeNode(linkedList*, listNode*, listNode*); // removes the given node from the given list.
+listNode* removeNode(linkedList*, listNode*, listNode*,char); // removes the given node from the given list.
 															//the other node is the prev node
 															// returns the updated curr node
 int posToInd(pos); // returns the mailbox number of the given location
@@ -68,7 +72,11 @@ piece* newPiece(char, int, pos);
 void printMove(move *);
 void printMoves(linkedList*);
 void initMailBox120();
+void set(char*, piece*, pos, char, int);
+void initPiece(piece*, char , int, pos);
 
 extern int mailbox[];
+
+#endif DS_
 
 

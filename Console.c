@@ -1,9 +1,6 @@
 ﻿#include "Console.h"
 
-gameMode = 1;
-depth = 1;
-userColor = WHITE;
-nextPlayer = WHITE;
+
 char board[120] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 					-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 					-1, 'R','N','B','Q','K','B','N','R',-1,
@@ -24,59 +21,77 @@ void initPieces(){
 	for (; i < 8; i++)
 	{
 		pos position = { i + 'a', 2 };
-		pieces[i] = *(newPiece('m', WHITE, position)); // init white pawns
+		initPiece(pieces + i, 'm', WHITE, position);
+		//pieces[i] = *(newPiece('m', WHITE, position)); // init white pawns
 		position.y = 7;
-		pieces[i+16] = *newPiece('M', BLACK, position); // init black pawns
+		initPiece(pieces + i + 16, 'M', BLACK, position);
+		//pieces[i+16] = *newPiece('M', BLACK, position); // init black pawns
 	}
 	i = 8;
 	pos position = { 'a', 1 };
-	pieces[i] = *newPiece('r', WHITE, position);
+	initPiece(pieces + i, 'r', WHITE, position);
+	//pieces[i] = *newPiece('r', WHITE, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('n', WHITE, position);
+	initPiece(pieces + i, 'n', WHITE, position);
+	//pieces[i] = *newPiece('n', WHITE, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('b', WHITE, position);
+	initPiece(pieces + i, 'b', WHITE, position);
+	//pieces[i] = *newPiece('b', WHITE, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('q', WHITE, position);
+	initPiece(pieces + i, 'q', WHITE, position);
+	//pieces[i] = *newPiece('q', WHITE, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('k', WHITE, position);
+	initPiece(pieces + i, 'k', WHITE, position);
+	//pieces[i] = *newPiece('k', WHITE, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('b', WHITE, position);
+	initPiece(pieces + i, 'b', WHITE, position);
+	//pieces[i] = *newPiece('b', WHITE, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('n', WHITE, position);
+	initPiece(pieces + i, 'n', WHITE, position);
+	//pieces[i] = *newPiece('n', WHITE, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('r', WHITE, position);
+	initPiece(pieces + i, 'r', WHITE, position);
+	//pieces[i] = *newPiece('r', WHITE, position);
 	position.x = 'a';
 	position.y = 8;
 	i += 9;
-	pieces[i] = *newPiece('r', BLACK, position);
+	initPiece(pieces + i, 'r', BLACK, position);
+	//pieces[i] = *newPiece('r', BLACK, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('n', BLACK, position);
+	initPiece(pieces + i, 'n', BLACK, position);
+	//pieces[i] = *newPiece('n', BLACK, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('b', BLACK, position);
+	initPiece(pieces + i, 'b', BLACK, position);
+	//pieces[i] = *newPiece('b', BLACK, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('q', BLACK, position);
+	initPiece(pieces + i, 'q', BLACK, position);
+	//pieces[i] = *newPiece('q', BLACK, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('k', BLACK, position);
+	initPiece(pieces + i, 'k', BLACK, position);
+	//pieces[i] = *newPiece('k', BLACK, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('b', BLACK, position);
+	initPiece(pieces + i, 'b', BLACK, position);
+	//pieces[i] = *newPiece('b', BLACK, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('n', BLACK, position);
+	initPiece(pieces + i, 'n', BLACK, position);
+	//pieces[i] = *newPiece('n', BLACK, position);
 	position.x++;
 	i++;
-	pieces[i] = *newPiece('r', BLACK, position);
+	initPiece(pieces + i, 'r', BLACK, position);
+	//pieces[i] = *newPiece('r', BLACK, position);
 }
 
 
@@ -181,7 +196,7 @@ move *parseMove(char* input, int player){
 		}
 		node = node->next;
 	}
-	freeList(moves);
+	freeList(moves,1);
 	if (m == NULL) // illegal move
 	{
 		print_message(ILLEGAL_MOVE);
@@ -273,7 +288,16 @@ int settingMode(){
 			}
 		}
 		else if (strncmp(input, "load", 4) == 0){ // load
-			// !!! complete this !!!
+			clear();
+			FILE * fp = fopen(input + 5, "r");
+			if (fp == NULL)
+			{
+				print_message(WRONG_FILE_NAME);
+				continue;
+			}
+			loadGame(fp, board, pieces);
+			print_board(board);
+			fclose(fp);
 		}
 		else if (strncmp(input, "clear", 5) == 0){
 			clear();
@@ -300,39 +324,11 @@ int settingMode(){
 		}
 		else if (strncmp(input, "set", 3) == 0){ // set
 			pos p = { input[5], input[7] - '0' };	// get the position from the input
-			if (!isLegalPos(p))	// illegal pos
-			{
-				print_message(WRONG_POSITION);
-				continue;
-			}
-			for (int i = 0; i < NUMOFPIECES; i++)
-			{
-				if (compPos(pieces[i].position, p) && pieces[i].captured == 0) 
-				{
-					pieces[i].captured = 1;	// remove the piece from the pos
-					break;
-				}
-			}
 			int color = input[10] == 'w' ? WHITE : BLACK;
-			int flag = 0;
 			char type = (input[16] == 'k' && input[17] == 'n') ? 'n' : input[16]; // get the type from the input
 			type = type == 'p' ? 'm' : type;
 			type = color == WHITE ? (char)tolower(type) : (char)toupper(type); // change case according to the color
-			for (int i = 0; i < NUMOFPIECES; i++) // search for a free piece of the given type
-			{
-				if (pieces[i].color == color && pieces[i].type == type && pieces[i].captured == 1)
-				{
-					pieces[i].position = p;
-					board[posToInd(p)] = type;
-					pieces[i].captured = 0;
-					pieces[i].moved = 1;
-					flag = 1;
-					break;
-				}
-			}
-			if (!flag){	// couldnt find a free piece of the given type
-				print_message(NO_PIECE); // illegal board
-			}
+			set(board, pieces, p, type, color);
 		}
 		else if ((strncmp(input, "print", 5) == 0)){
 			print_board(board);
@@ -348,7 +344,8 @@ int settingMode(){
 					break;
 				}
 			}
-			if (!flag && getMoves(pieces,board,nextPlayer)->first == NULL) // the first player has no possible moves
+			linkedList* moves = getMoves(pieces, board, nextPlayer);
+			if (!flag && moves->first == NULL) // the first player has no possible moves
 			{
 				print_message(WROND_BOARD_INITIALIZATION);
 				flag = 1;
@@ -359,14 +356,11 @@ int settingMode(){
 				print_message(WROND_BOARD_INITIALIZATION);
 				flag = 1;
 			}
-			/*else if (!flag && getMoves(pieces, board, 1 - nextPlayer)->first == NULL) // mate or tie board
-			{
-				print_message(WROND_BOARD_INITIALIZATION);
-				flag = 1;
-			}*/
+			freeList(moves, 1);
 			if (!flag){ // can start the game
 				return 0;
 			}
+
 		}
 		else if (strncmp(input, "quit", 4) == 0){ // quit
 			return 1;
@@ -383,13 +377,13 @@ int settingMode(){
 returns 1 if the game is over, otherwise returns 0*/
 int userTurn(int player){
 	char* color = player == WHITE ? "White" : "Black";
-	print_message(color);
-	print_message(" player - enter your move: \n");
 	FILE *fp = stdin;
 	char input[51];
 	int ch;
 	while (1)
 	{
+		print_message(color);
+		print_message(" player - enter your move: \n");
 		int cnt = 0;
 		while (EOF != (ch = fgetc(fp)) && ch != '\n'){
 			input[cnt++] = ch;
@@ -430,13 +424,13 @@ int userTurn(int player){
 			linkedList *moves = newLinkedList();
 			genMoves(p, moves, board);
 			printMoves(moves);
-			freeList(moves);
+			freeList(moves,1);
 		}
 		else if (strncmp(input, "get_best_moves",14) == 0) // get best moves
 		{
 			linkedList *bestMoves = getBestMoves(board, pieces, player, input[15] - '0'); // !!! change this to include best difficulty !!!
 			printMoves(bestMoves);
-			freeList(bestMoves);
+			freeList(bestMoves,1);
 		}
 		else if (strncmp(input, "get_score", 9) == 0) // get scores
 		{
@@ -454,7 +448,17 @@ int userTurn(int player){
 			free(m);
 			printf("%d\n", score);
 		}
-		else if (strncmp(input, "quit", 4) == 0){
+		else if (strncmp(input, "save", 4) == 0){ // save
+			FILE * fp = fopen(input + 5, "w");
+			if (fp == NULL)
+			{
+				print_message(WRONG_FILE_NAME);
+				continue;
+			}
+			saveGame(fp, board);
+			fclose(fp);
+		}
+		else if (strncmp(input, "quit", 4) == 0){ // quit
 			return 1;
 		}
 		else
@@ -472,8 +476,7 @@ int compTurn(){
 	print_message("Computer: move ");
 	printMove(m);
 	makeMove(m, pieces, board);
-	free(m);
-	freeList(bestMoves);
+	freeList(bestMoves,1);
 	print_board(board);
 	return endGamePrint(1 - userColor);
 }
@@ -503,6 +506,5 @@ int consoleMode(){
 			userColor = 1 - userColor;
 		}
 	}
-
 	return 1;
 }

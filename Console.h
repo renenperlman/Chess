@@ -1,9 +1,6 @@
 #include "Minimax.h"
+#include "IO.h"
 
-extern int gameMode;
-extern int depth;
-extern int userColor;
-extern int nextPlayer;
 
 int consoleMode();
 

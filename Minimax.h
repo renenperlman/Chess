@@ -14,6 +14,7 @@
      _a < _b ? _a : _b; })*/
 
 linkedList *getBestMoves(char*, piece*, int,int);
-int alphabeta(char* , piece* , int , int , int , int , int , int , int **);
+int alphabeta(char* , piece* , int , int , int , int , int , int **);
+extern int pruneCount;
 
 #endif MX_

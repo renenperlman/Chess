@@ -49,16 +49,17 @@ void genMoves(piece *p, linkedList *moves, char board[]){
 }
 
 /*returns a list containing all the possible moves by the given player*/
-linkedList* getMoves(piece *pieces, char* board, int player){
+linkedList* getMoves(piece *pieces, char* board, int player, int check){
 	linkedList* moves = newLinkedList();
-	for (int i = 0; i < NUMOFPIECES; i++){
-		if (pieces[i].captured || pieces[i].color!=player)
+	int shift = player == WHITE ? 0 : 16;
+	for (int i = 0; i < NUMOFPIECES/2; i++){
+		if (pieces[i + shift].captured || pieces[i + shift].color != player)
 		{
 			continue;
 		}
-		genMoves(pieces + i, moves, board);
+		genMoves(pieces + i + shift, moves, board);
 	}
-	if (isCheck(pieces,board,player))
+	if (check)
 	{
 		updateMoveList(moves, pieces, player, board);
 	}
@@ -116,7 +117,7 @@ void updateMoveList(linkedList* moves, piece* pieces, int player, char* board){
 }
 
 int score(piece *pieces,char* board, int player){
-	linkedList *moves = getMoves(pieces, board, 1 - player);
+	linkedList *moves = getMoves(pieces, board, 1 - player, isCheck(pieces, board, 1 - player));
 	if (moves->first == NULL){ // no possible moves for other player
 		if (isCheck(pieces, board, 1 - player)){ // check
 			freeList(moves,1);
@@ -197,12 +198,13 @@ void promote(piece* p, char type){
 otherwise, return 0*/
 int isThreat(pos p, piece* pieces, char* board, int player){
 	linkedList* moves = newLinkedList();
-	for (int i = 0; i < NUMOFPIECES; i++){
-		if (pieces[i].captured || pieces[i].color != player)
+	int shift = player == WHITE ? 0 : 16;
+	for (int i = 0; i < NUMOFPIECES/2; i++){
+		if (pieces[i + shift].captured || pieces[i + shift].color != player)
 		{
 			continue;
 		}
-		genMoves(pieces + i, moves, board);
+		genMoves(pieces + i + shift, moves, board);
 	}
 	listNode* node = moves->first;
 	while (node!=NULL)
@@ -220,11 +222,12 @@ int isThreat(pos p, piece* pieces, char* board, int player){
 /*returns 1 if the given player is in check in the given board*/
 int isCheck(piece* pieces, char* board, int player){
 	char type = player ? WHITE_K : BLACK_K;
+	int shift = player == WHITE ? 0 : 16;
 	pos kingPos;
-	for (int i = 0; i < NUMOFPIECES; i++)
+	for (int i = 0; i < NUMOFPIECES/2; i++)
 	{
-		if (pieces[i].type == type){
-			kingPos = pieces[i].position;
+		if (pieces[i + shift].type == type){
+			kingPos = pieces[i + shift].position;
 			break;
 		}
 	}
@@ -233,5 +236,5 @@ int isCheck(piece* pieces, char* board, int player){
 
 /*returns 1 if the given player has a possible move*/
 int hasMoves(piece* pieces, char* board, int player){
-	return (getMoves(pieces, board, player)->first != NULL);
+	return (getMoves(pieces, board, player, isCheck(pieces, board, player))->first != NULL);
 }

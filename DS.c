@@ -260,14 +260,15 @@ void set(char* board, piece* pieces, pos p, char type, int color){
 		}
 	}
 	int flag = 0;
-	for (int i = 0; i < NUMOFPIECES; i++) // search for a free piece of the given type
+	int shift = color == WHITE ? 0 : 16;
+	for (int i = 0; i < NUMOFPIECES/2; i++) // search for a free piece of the given type
 	{
-		if (pieces[i].color == color && pieces[i].type == type && pieces[i].captured == 1)
+		if (pieces[i + shift].color == color && pieces[i + shift].type == type && pieces[i + shift].captured == 1)
 		{
-			pieces[i].position = p;
+			pieces[i + shift].position = p;
 			board[posToInd(p)] = type;
-			pieces[i].captured = 0;
-			pieces[i].moved = 1;
+			pieces[i + shift].captured = 0;
+			pieces[i + shift].moved = 1;
 			flag = 1;
 			break;
 		}

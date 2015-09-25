@@ -171,11 +171,12 @@ move *parseMove(char* input, int player){
 		return NULL;
 	}
 	piece *p = NULL;
-	for (int i = 0; i < NUMOFPIECES; i++)
+	int shift = player == WHITE ? 0 : 16;
+	for (int i = 0; i < NUMOFPIECES/2; i++)
 	{
-		if (compPos(pieces[i].position, start) && pieces[i].captured == 0 && pieces[i].color == player)
+		if (compPos(pieces[i + shift].position, start) && pieces[i + shift].captured == 0 && pieces[i + shift].color == player)
 		{
-			p = pieces + i;
+			p = pieces + i + shift;
 			break;
 		}
 	}
@@ -344,7 +345,7 @@ int settingMode(){
 					break;
 				}
 			}
-			linkedList* moves = getMoves(pieces, board, nextPlayer);
+			linkedList* moves = getMoves(pieces, board, nextPlayer, isCheck(pieces, board, nextPlayer));
 			if (!flag && moves->first == NULL) // the first player has no possible moves
 			{
 				print_message(WROND_BOARD_INITIALIZATION);
@@ -408,11 +409,12 @@ int userTurn(int player){
 				continue;
 			}
 			piece *p = NULL;
-			for (int i = 0; i < NUMOFPIECES; i++)
+			int shift = player == WHITE ? 0 : 16;
+			for (int i = 0; i < NUMOFPIECES/2; i++)
 			{
-				if (compPos(pieces[i].position, position) && pieces[i].captured == 0 && pieces[i].color == player)
+				if (compPos(pieces[i + shift].position, position) && pieces[i + shift].captured == 0 && pieces[i + shift].color == player)
 				{
-					p = pieces + i;
+					p = pieces + i + shift;
 					break;
 				}
 			}
@@ -429,6 +431,7 @@ int userTurn(int player){
 		else if (strncmp(input, "get_best_moves",14) == 0) // get best moves
 		{
 			linkedList *bestMoves = getBestMoves(board, pieces, player, input[15] - '0'); // !!! change this to include best difficulty !!!
+			//printf("prune count = %d\n", pruneCount);
 			printMoves(bestMoves);
 			freeList(bestMoves,1);
 		}
@@ -441,7 +444,7 @@ int userTurn(int player){
 			piece* newPieces = (piece*)malloc(NUMOFPIECES * sizeof(piece));
 			memcpy(newPieces, pieces, NUMOFPIECES * sizeof(piece));
 			makeMove(m, newPieces, newBoard);
-			int *scores = NULL, score = alphabeta(newBoard, newPieces, player, INT_MIN, INT_MAX, depth, 1, 1, &scores);
+			int *scores = NULL, score = alphabeta(newBoard, newPieces, INT_MIN, INT_MAX, d, 0, 0, &scores);
 			free(scores);
 			free(newBoard);
 			free(newPieces);

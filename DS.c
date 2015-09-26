@@ -9,6 +9,8 @@ int mailbox[64] = { 91, 92, 93, 94, 95, 96, 97, 98,
 31, 32, 33, 34, 35, 36, 37, 38,
 21, 22, 23, 24, 25, 26, 27, 28 };
 
+
+
 char mailbox120[120][2];
 
 void initMailBox120(){
@@ -29,19 +31,18 @@ void initMailBox120(){
 
 
 
-void freeNode(listNode* node, char flag){
-	if (flag)
-	{
-		free(node->data);
-	}
+void freeNode(listNode* node){
+	free(node->data);
 	free(node);
 }
-void freeList(linkedList* list, char flag){
+
+
+void freeList(linkedList* list){
 	listNode* curr = list->first;
 	while (curr!=NULL)
 	{
 		listNode* next = curr->next;
-		freeNode(curr, flag);
+		freeNode(curr);
 		curr = next;
 	}
 	free(list);
@@ -61,8 +62,6 @@ listNode* cloneNode(listNode* node){
 	return clone;
 }
 
-
-
 listNode* newNode(void* data, size_t n){
 	listNode* node = (listNode*)malloc(sizeof(listNode));
 	node->data = data;
@@ -79,15 +78,15 @@ void insertNode(linkedList* list, listNode* node){
 /* removes the given node from the given list.
 the other node is the prev node
 returns the updated curr node*/
-listNode* removeNode(linkedList* list , listNode* prev , listNode* curr, char flag){
+listNode* removeNode(linkedList* list , listNode* prev , listNode* curr){
 	if (prev==NULL)
 	{
 		list->first = curr->next;
-		freeNode(curr, flag);
+		freeNode(curr);
 		return list->first;
 	}
 	prev->next = curr->next;
-	freeNode(curr, flag);
+	freeNode(curr);
 	return prev->next;
 }
 
@@ -100,11 +99,11 @@ pos indToPos(int ind){
 	return p;
 }
 
-move* newMove(piece* p, pos dest, int capture){
+move* newMove(pos origin, pos dest, int capture){
 	move* m = (move*)malloc(sizeof(move));
 	m->capture = capture;
 	m->dest = dest;
-	m->p = p;
+	m->origin = origin;
 	return m;
 }
 
@@ -122,7 +121,7 @@ int isLegalPos(pos p){
 	return (p.x >= 'a' && p.x<='h' && p.y>=1 && p.y<=8);
 }
 
-piece* newPiece(char type, int color, pos position){
+/*piece* newPiece(char type, int color, pos position){
 	type = color == WHITE ? (char)tolower(type) : (char)toupper(type);
 	piece *newP = (piece*)malloc(sizeof(piece));
 	newP->captured = 0;
@@ -176,9 +175,9 @@ piece* newPiece(char type, int color, pos position){
 		newP->singleMove = 0;
 	}
 	return newP;
-}
+}*/
 
-void initPiece(piece *newP, char type, int color, pos position){
+/*void initPiece(piece *newP, char type, int color, pos position){
 	type = color == WHITE ? (char)tolower(type) : (char)toupper(type);
 	newP->captured = 0;
 	newP->color = color;
@@ -231,10 +230,10 @@ void initPiece(piece *newP, char type, int color, pos position){
 		newP->singleMove = 0;
 	}
 	return ;
-}
+}*/
 
 void printMove(move *m){
-	printf("<%c,%d> to <%c,%d>\n", m->p->position.x, m->p->position.y,m->dest.x,m->dest.y);
+	printf("<%c,%d> to <%c,%d>\n", m->origin.x, m->origin.y, m->dest.x, m->dest.y);
 }
 
 void printMoves(linkedList *moves){
@@ -246,34 +245,42 @@ void printMoves(linkedList *moves){
 	}
 }
 
-void set(char* board, piece* pieces, pos p, char type, int color){
+void set(char* board, pos p, char type, int color){
 	if (!isLegalPos(p))	// illegal pos
 	{
 		print_message(WRONG_POSITION);
+		return;
 	}
-	for (int i = 0; i < NUMOFPIECES; i++)
+	int count = 0;
+	pos searcher;
+	for (int x = 'a'; x < 'i'; x++) // counts how many pieces of the given type are on the board
 	{
-		if (compPos(pieces[i].position, p) && pieces[i].captured == 0)
+		searcher.x = x;
+		for (int y = 1; y < 9; y++)
 		{
-			pieces[i].captured = 1;	// remove the piece from the pos
-			break;
+			searcher.y = y;
+			if (board[posToInd(searcher)] == type)
+			{
+				count++;
+			}
 		}
 	}
-	int flag = 0;
-	int shift = color == WHITE ? 0 : 16;
-	for (int i = 0; i < NUMOFPIECES/2; i++) // search for a free piece of the given type
+	int maxCount; // max amount of pieces of the given type
+	if (type == WHITE_P || type == BLACK_P)
 	{
-		if (pieces[i + shift].color == color && pieces[i + shift].type == type && pieces[i + shift].captured == 1)
-		{
-			pieces[i + shift].position = p;
-			board[posToInd(p)] = type;
-			pieces[i + shift].captured = 0;
-			pieces[i + shift].moved = 1;
-			flag = 1;
-			break;
-		}
+		maxCount = 8;
 	}
-	if (!flag){	// couldnt find a free piece of the given type
+	else if (type == WHITE_K || type == BLACK_K || type == WHITE_Q || type == BLACK_Q)
+	{
+		maxCount = 1;
+	}
+	else
+	{
+		maxCount = 2;
+	}
+	if (count >= maxCount){	// too many pieces of the same type
 		print_message(NO_PIECE); // illegal board
+		return;
 	}
+	board[posToInd(p)] = type; // set the piece
 }

@@ -14,94 +14,9 @@ char board[120] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 					-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 					-1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
-piece pieces[NUMOFPIECES];
-
-void initPieces(){
-	int i = 0;
-	for (; i < 8; i++)
-	{
-		pos position = { i + 'a', 2 };
-		initPiece(pieces + i, 'm', WHITE, position);
-		//pieces[i] = *(newPiece('m', WHITE, position)); // init white pawns
-		position.y = 7;
-		initPiece(pieces + i + 16, 'M', BLACK, position);
-		//pieces[i+16] = *newPiece('M', BLACK, position); // init black pawns
-	}
-	i = 8;
-	pos position = { 'a', 1 };
-	initPiece(pieces + i, 'r', WHITE, position);
-	//pieces[i] = *newPiece('r', WHITE, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'n', WHITE, position);
-	//pieces[i] = *newPiece('n', WHITE, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'b', WHITE, position);
-	//pieces[i] = *newPiece('b', WHITE, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'q', WHITE, position);
-	//pieces[i] = *newPiece('q', WHITE, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'k', WHITE, position);
-	//pieces[i] = *newPiece('k', WHITE, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'b', WHITE, position);
-	//pieces[i] = *newPiece('b', WHITE, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'n', WHITE, position);
-	//pieces[i] = *newPiece('n', WHITE, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'r', WHITE, position);
-	//pieces[i] = *newPiece('r', WHITE, position);
-	position.x = 'a';
-	position.y = 8;
-	i += 9;
-	initPiece(pieces + i, 'r', BLACK, position);
-	//pieces[i] = *newPiece('r', BLACK, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'n', BLACK, position);
-	//pieces[i] = *newPiece('n', BLACK, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'b', BLACK, position);
-	//pieces[i] = *newPiece('b', BLACK, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'q', BLACK, position);
-	//pieces[i] = *newPiece('q', BLACK, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'k', BLACK, position);
-	//pieces[i] = *newPiece('k', BLACK, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'b', BLACK, position);
-	//pieces[i] = *newPiece('b', BLACK, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'n', BLACK, position);
-	//pieces[i] = *newPiece('n', BLACK, position);
-	position.x++;
-	i++;
-	initPiece(pieces + i, 'r', BLACK, position);
-	//pieces[i] = *newPiece('r', BLACK, position);
-}
-
-
 
 /*clears the board and the pieces*/
 void clear(){
-	for (int i = 0; i < NUMOFPIECES; i++)
-	{
-		pieces[i].captured = 1;
-	}
 	for (int i = 0; i < 8; i++)
 	{
 		for (int j = 0; j < 8; j++)
@@ -170,23 +85,13 @@ move *parseMove(char* input, int player){
 		print_message(WRONG_POSITION);
 		return NULL;
 	}
-	piece *p = NULL;
-	int shift = player == WHITE ? 0 : 16;
-	for (int i = 0; i < NUMOFPIECES/2; i++)
-	{
-		if (compPos(pieces[i + shift].position, start) && pieces[i + shift].captured == 0 && pieces[i + shift].color == player)
-		{
-			p = pieces + i + shift;
-			break;
-		}
-	}
-	if (p == NULL)
+	if (colorOfLoc(board,posToInd(start))!=player)
 	{
 		print_message(WRONG_PIECE);
 		return NULL;
 	}
 	linkedList *moves = newLinkedList();
-	genMoves(p, moves, board); // checking if legal move
+	genMoves(start, moves, board); // checking if legal move
 	listNode *node = moves->first;
 	move *m = NULL;
 	while (node != NULL) // searching in possible moves
@@ -197,7 +102,7 @@ move *parseMove(char* input, int player){
 		}
 		node = node->next;
 	}
-	freeList(moves,1);
+	freeList(moves);
 	if (m == NULL) // illegal move
 	{
 		print_message(ILLEGAL_MOVE);
@@ -207,8 +112,8 @@ move *parseMove(char* input, int player){
 }
 
 int endGamePrint(int player){
-	int check = isCheck(pieces, board, 1 - player);
-	if (hasMoves(pieces, board, 1 - player) == 0) // other player cant move
+	int check = isCheck(board, 1 - player);
+	if (hasMoves( board, 1 - player) == 0) // other player cant move
 	{
 		if (check){ // mate
 			if (player == WHITE)
@@ -296,7 +201,7 @@ int settingMode(){
 				print_message(WRONG_FILE_NAME);
 				continue;
 			}
-			loadGame(fp, board, pieces);
+			loadGame(fp, board);
 			print_board(board);
 			fclose(fp);
 		}
@@ -313,14 +218,6 @@ int settingMode(){
 				print_message(WRONG_POSITION);
 				continue;
 			}
-			for (int i = 0; i < NUMOFPIECES; i++)
-			{
-				if (compPos(pieces[i].position, p) && pieces[i].captured == 0)
-				{
-					pieces[i].captured = 1;
-					break;
-				}
-			}
 			board[posToInd(p)] = EMPTY;
 		}
 		else if (strncmp(input, "set", 3) == 0){ // set
@@ -329,38 +226,49 @@ int settingMode(){
 			char type = (input[16] == 'k' && input[17] == 'n') ? 'n' : input[16]; // get the type from the input
 			type = type == 'p' ? 'm' : type;
 			type = color == WHITE ? (char)tolower(type) : (char)toupper(type); // change case according to the color
-			set(board, pieces, p, type, color);
+			set(board, p, type, color);
 		}
 		else if ((strncmp(input, "print", 5) == 0)){
 			print_board(board);
 		}
 		else if (strncmp(input, "start", 5) == 0){ // start
-			int flag = 0;
-			for (int i = 0; i < NUMOFPIECES; i++)
+			int flagW = 0, flagB = 0;
+			pos kingPos;
+			for (int x = 'a'; x < 'i'; x++)
 			{
-				if ((pieces[i].type == BLACK_K || pieces[i].type == WHITE_K) && pieces[i].captured == 1) // no kings on the board
+				kingPos.x = x;
+				for (int y = 1; y < 9; y++)
 				{
-					print_message(WROND_BOARD_INITIALIZATION);
-					flag = 1;
-					break;
+					kingPos.y = y;
+					if (board[posToInd(kingPos)] == WHITE_K)
+					{
+						flagW = 1;
+					}
+					if (board[posToInd(kingPos)] == BLACK_K)
+					{
+						flagB = 1;
+					}
 				}
 			}
-			linkedList* moves = getMoves(pieces, board, nextPlayer, isCheck(pieces, board, nextPlayer));
-			if (!flag && moves->first == NULL) // the first player has no possible moves
+			if (!flagB || !flagW) // no kings
 			{
 				print_message(WROND_BOARD_INITIALIZATION);
-				flag = 1;
+				continue;
 			}
-			else if (!flag && isCheck(pieces,board,1 - nextPlayer)) // the other player is in check 
+			linkedList* moves = getMoves(board, nextPlayer);
+			if (moves->first == NULL) // the first player has no possible moves
+			{
+				print_message(WROND_BOARD_INITIALIZATION);
+				continue;
+			}
+			else if (isCheck(board,1 - nextPlayer)) // the other player is in check 
 				// (that means that the next player can move and capture the king)
 			{
 				print_message(WROND_BOARD_INITIALIZATION);
-				flag = 1;
+				continue;
 			}
-			freeList(moves, 1);
-			if (!flag){ // can start the game
-				return 0;
-			}
+			freeList(moves);
+			return 0; // can start the game
 
 		}
 		else if (strncmp(input, "quit", 4) == 0){ // quit
@@ -396,7 +304,7 @@ int userTurn(int player){
 			{
 				continue;
 			}
-			makeMove(m, pieces, board);
+			makeMove(m, board);
 			free(m);
 			print_board(board);
 			return endGamePrint(player);
@@ -408,32 +316,26 @@ int userTurn(int player){
 				print_message(WRONG_POSITION);
 				continue;
 			}
-			piece *p = NULL;
-			int shift = player == WHITE ? 0 : 16;
-			for (int i = 0; i < NUMOFPIECES/2; i++)
-			{
-				if (compPos(pieces[i + shift].position, position) && pieces[i + shift].captured == 0 && pieces[i + shift].color == player)
-				{
-					p = pieces + i + shift;
-					break;
-				}
-			}
-			if (p == NULL)
+			if (colorOfLoc(board,posToInd(position))!=player)
 			{
 				print_message(WRONG_PIECE);
 				continue;
 			}
 			linkedList *moves = newLinkedList();
-			genMoves(p, moves, board);
+			genMoves(position, moves, board);
+			if (isCheck(board,player))
+			{
+				updateMoveList(moves, player, board);
+			}
 			printMoves(moves);
-			freeList(moves,1);
+			freeList(moves);
 		}
 		else if (strncmp(input, "get_best_moves",14) == 0) // get best moves
 		{
-			linkedList *bestMoves = getBestMoves(board, pieces, player, input[15] - '0'); // !!! change this to include best difficulty !!!
+			linkedList *bestMoves = getBestMoves(board, player, input[15] - '0'); // !!! change this to include best difficulty !!!
 			//printf("prune count = %d\n", pruneCount);
 			printMoves(bestMoves);
-			freeList(bestMoves,1);
+			freeList(bestMoves);
 		}
 		else if (strncmp(input, "get_score", 9) == 0) // get scores
 		{
@@ -441,13 +343,10 @@ int userTurn(int player){
 			char* newBoard = (char*)malloc(120 * sizeof(char));
 			memcpy(newBoard, board, 120 * sizeof(char));
 			move *m = parseMove(input + 12,player);
-			piece* newPieces = (piece*)malloc(NUMOFPIECES * sizeof(piece));
-			memcpy(newPieces, pieces, NUMOFPIECES * sizeof(piece));
-			makeMove(m, newPieces, newBoard);
-			int *scores = NULL, score = alphabeta(newBoard, newPieces, INT_MIN, INT_MAX, d, 0, 0, &scores);
+			makeMove(m, newBoard);
+			int *scores = NULL, score = alphabeta(newBoard, INT_MIN, INT_MAX, d, 0, 0, &scores);
 			free(scores);
 			free(newBoard);
-			free(newPieces);
 			free(m);
 			printf("%d\n", score);
 		}
@@ -474,18 +373,17 @@ int userTurn(int player){
 
 
 int compTurn(){
-	linkedList *bestMoves = getBestMoves(board, pieces, 1 - userColor, depth);
+	linkedList *bestMoves = getBestMoves(board, 1 - userColor, depth);
 	move *m = bestMoves->first->data;
 	print_message("Computer: move ");
 	printMove(m);
-	makeMove(m, pieces, board);
-	freeList(bestMoves,1);
+	makeMove(m, board);
+	freeList(bestMoves);
 	print_board(board);
 	return endGamePrint(1 - userColor);
 }
 
 int consoleMode(){
-	initPieces();
 	initMailBox120();
 	print_board(board);
 	int n = settingMode();

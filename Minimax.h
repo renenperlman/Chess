@@ -13,8 +13,8 @@
        __typeof__ (b) _b = (b); \
      _a < _b ? _a : _b; })*/
 
-linkedList *getBestMoves(char*, piece*, int,int);
-int alphabeta(char* , piece* , int , int , int , int , int , int **);
+linkedList *getBestMoves(char*,int,int);
+int alphabeta(char*, int , int , int , int , int , int **);
 extern int pruneCount;
 
-#endif MX_
+#endif 

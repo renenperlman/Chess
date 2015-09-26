@@ -1,5 +1,8 @@
 ﻿#include "IO.h"
 
+
+
+
 /*prints the given row to the given file*/
 void saveRow(FILE *fp, char *board, int row){
 	fprintf(fp, ROW, row);
@@ -45,7 +48,7 @@ void saveGame(FILE *fp, char *board){
 	fprintf(fp, GAMEEND);
 }
 
-void loadRow(FILE *fp, int row, char* board, piece *pieces){
+void loadRow(FILE *fp, int row, char* board){
 	pos p;
 	p.y = row;
 	char c;
@@ -55,13 +58,12 @@ void loadRow(FILE *fp, int row, char* board, piece *pieces){
 		c = fgetc(fp);
 		if (c!='_')
 		{
-			int color = islower(c) ? WHITE : BLACK;
-			set(board, pieces,p, c, color);
+			board[posToInd(p)] = c;
 		}
 	}
 }
 
-void loadGame(FILE *fp, char *board, piece *pieces){
+void loadGame(FILE *fp, char *board){
 	int i = 0;
 	char c;
 	while (1){
@@ -109,7 +111,7 @@ void loadGame(FILE *fp, char *board, piece *pieces){
 		}
 		if (i > 6) // row line
 		{
-			loadRow(fp, 8 + 7 - i, board, pieces);
+			loadRow(fp, 8 + 7 - i, board);
 		}
 		
 		while ((c = fgetc(fp)) != '\n' && c != EOF){

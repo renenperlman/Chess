@@ -17,4 +17,4 @@ linkedList *getBestMoves(char*,int,int);
 int alphabeta(char*, int , int , int , int , int , int **);
 extern int pruneCount;
 
-#endif MX_
+#endif 

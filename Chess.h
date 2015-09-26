@@ -62,4 +62,4 @@ extern int nextPlayer;
 extern char whiteInCheck;
 extern char blackInCheck;
 
-#endif CHESS_
+#endif 

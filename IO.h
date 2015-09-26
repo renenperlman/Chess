@@ -26,4 +26,4 @@ void saveGame(FILE*, char*);
 /*loads the given file to the given board*/
 void loadGame(FILE*, char*);
 
-#endif IO_
+#endif 

@@ -16,4 +16,4 @@ int isCheck(char[], int); // returns 1 if the given player is in check in the gi
 int hasMoves(char*, int);
 void promote(char*, pos, char); // promote the given pawn to the given type
 int colorOfLoc(char*, int);
-#endif ENG_
+#endif 

@@ -71,6 +71,6 @@ void set(char*, pos, char, int);
 
 extern int mailbox[];
 
-#endif DS_
+#endif 
 
 

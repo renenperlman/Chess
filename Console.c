@@ -163,9 +163,9 @@ int settingMode(){
 	FILE *fp = stdin;
 	char input[51];
 	int ch;
+	print_message(ENTER_SETTINGS);
 	while (1)
 	{
-		print_message(ENTER_SETTINGS);
 		int cnt = 0;
 		while (EOF != (ch = fgetc(fp)) && ch != '\n'){
 			input[cnt++] = ch;

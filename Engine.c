@@ -413,5 +413,8 @@ int isCheck(char* board, int player){
 
 /*returns 1 if the given player has a possible move*/
 int hasMoves(char* board, int player){
-	return (getMoves(board, player)->first != NULL);
+	linkedList *moves = getMoves(board, player);
+	int res = moves->first != NULL;
+	freeList(moves);
+	return res;
 }

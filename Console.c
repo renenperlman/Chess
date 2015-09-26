@@ -81,6 +81,11 @@ char * getInput(FILE * fp, size_t size){
 move *parseMove(char* input, int player){
 	pos start = { input[6], input[8] - '0' };
 	pos dest = { input[15], input[17] - '0' };
+	char prom = 0;
+	if (input[19])
+	{
+		prom = input[20] == 'k' ? 'n' : input[20];
+	}
 	if (!isLegalPos(start) || !isLegalPos(dest)){
 		print_message(WRONG_POSITION);
 		return NULL;
@@ -98,7 +103,19 @@ move *parseMove(char* input, int player){
 	{
 		if (compPos(((move*)node->data)->dest, dest))
 		{
-			m = (move*)cloneData(node->data,sizeof(move)); // legal move
+			if (((move*)node->data)->promType) // promotion move
+			{
+				if (!prom && ((move*)node->data)->promType == 'q'){ // prom not given by user
+					m = (move*)cloneData(node->data, sizeof(move)); // using queen prom by default
+				}
+				else if (((move*)node->data)->promType == prom){// the correct prom
+					m = (move*)cloneData(node->data, sizeof(move));
+				}
+			}
+			else
+			{
+				m = (move*)cloneData(node->data, sizeof(move)); // legal move
+			}	
 		}
 		node = node->next;
 	}

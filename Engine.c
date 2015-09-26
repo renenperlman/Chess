@@ -66,7 +66,7 @@ void genMoves(pos p, linkedList *moves, char board[]){
 				if (board[ind] == OUT_OF_BOARD) break; // out of bound
 				if (colorOfLoc(board, ind) == color) break; // same piece color
 				int capture = board[ind] == EMPTY ? 0 : 1;
-				move *m = newMove(p, indToPos(ind), capture);
+				move *m = newMove(p, indToPos(ind),0);
 				memcpy(newBoard, board, 120 * sizeof(char));
 				makeMove(m, newBoard);
 				if (isCheck(newBoard,color))
@@ -98,12 +98,26 @@ void genMoves(pos p, linkedList *moves, char board[]){
 		int ind = posToInd(p);
 		move *m;
 		if (board[ind + directions[0]] == EMPTY){// make a step forward
-			m = newMove(p, indToPos(ind + directions[0]), 0);
+			m = newMove(p, indToPos(ind + directions[0]),0);
 			memcpy(newBoard, board, 120 * sizeof(char));
 			makeMove(m, newBoard);
 			if (!isCheck(newBoard, color))
 			{
-				insertNode(moves, newNode(m, sizeof(move)));
+				if ((color == WHITE && m->dest.y == 8) || (color == BLACK && m->dest.y == 1))
+				{
+					free(m);
+					m = newMove(p, indToPos(ind + directions[0]), 'q');
+					insertNode(moves, newNode(m, sizeof(move)));
+					m = newMove(p, indToPos(ind + directions[0]), 'b');
+					insertNode(moves, newNode(m, sizeof(move)));
+					m = newMove(p, indToPos(ind + directions[0]), 'r');
+					insertNode(moves, newNode(m, sizeof(move)));
+					m = newMove(p, indToPos(ind + directions[0]), 'n');
+					insertNode(moves, newNode(m, sizeof(move)));
+				}
+				else{
+					insertNode(moves, newNode(m, sizeof(move)));
+				}
 			}	
 			else{
 				free(m);
@@ -112,12 +126,26 @@ void genMoves(pos p, linkedList *moves, char board[]){
 		for (int i = 1; i < 3; i++)
 		{
 			if (colorOfLoc(board, ind + directions[i]) == 1 - colorOfLoc(board, posToInd(p))) {// capture
-				m = newMove(p, indToPos(ind + directions[i]), 1);
+				m = newMove(p, indToPos(ind + directions[i]),0);
 				memcpy(newBoard, board, 120 * sizeof(char));
 				makeMove(m, newBoard);
 				if (!isCheck(newBoard, color))
 				{
-					insertNode(moves, newNode(m, sizeof(move)));
+					if ((color == WHITE && m->dest.y == 8) || (color == BLACK && m->dest.y == 1))
+					{
+						free(m);
+						m = newMove(p, indToPos(ind + directions[0]), 'q');
+						insertNode(moves, newNode(m, sizeof(move)));
+						m = newMove(p, indToPos(ind + directions[0]), 'b');
+						insertNode(moves, newNode(m, sizeof(move)));
+						m = newMove(p, indToPos(ind + directions[0]), 'r');
+						insertNode(moves, newNode(m, sizeof(move)));
+						m = newMove(p, indToPos(ind + directions[0]), 'n');
+						insertNode(moves, newNode(m, sizeof(move)));
+					}
+					else{
+						insertNode(moves, newNode(m, sizeof(move)));
+					}
 				}
 				else
 				{
@@ -150,7 +178,15 @@ linkedList* getMoves(char* board, int player){
 /* assumes that the given player is in check,
 remove all moves that keeps in him check*/
 void makeMove(move* m, char* board){
-	char type = board[posToInd(m->origin)];
+	char type;
+	if (m->promType == 0)
+	{
+		type = board[posToInd(m->origin)];
+	}
+	else
+	{
+		type = colorOfLoc(board, posToInd(m->origin)) == WHITE ? m->promType : tolower(m->promType);
+	}
 	board[posToInd(m->origin)] = EMPTY;
 	board[posToInd(m->dest)] = type;
 }

@@ -99,11 +99,11 @@ pos indToPos(int ind){
 	return p;
 }
 
-move* newMove(pos origin, pos dest, int capture){
+move* newMove(pos origin, pos dest, char promType){
 	move* m = (move*)malloc(sizeof(move));
-	m->capture = capture;
 	m->dest = dest;
 	m->origin = origin;
+	m->promType = promType;
 	return m;
 }
 
@@ -233,7 +233,24 @@ int isLegalPos(pos p){
 }*/
 
 void printMove(move *m){
-	printf("<%c,%d> to <%c,%d>\n", m->origin.x, m->origin.y, m->dest.x, m->dest.y);
+	printf("<%c,%d> to <%c,%d>", m->origin.x, m->origin.y, m->dest.x, m->dest.y);
+	if (m->promType == 'q')
+	{
+		printf(" queen");
+	}
+	else if (m->promType == 'b')
+	{
+		printf(" bishop");
+	}
+	else if (m->promType == 'r')
+	{
+		printf(" rook");
+	}
+	else if (m->promType == 'n')
+	{
+		printf(" knight");
+	}
+	printf("\n");
 }
 
 void printMoves(linkedList *moves){

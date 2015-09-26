@@ -1,6 +1,5 @@
 ﻿#include "Minimax.h"
 
-pruneCount = 0;
 
 int alphabeta(char* board, int alpha, int beta, int depth, int isMax ,int firstCall, int **scores){
 	if (depth == 0)
@@ -45,7 +44,6 @@ int alphabeta(char* board, int alpha, int beta, int depth, int isMax ,int firstC
 			alpha = max(v, alpha);
 			if (beta < alpha || beta == alpha)
 			{
-				pruneCount++;
 				break;
 			}
 		}
@@ -73,7 +71,6 @@ int alphabeta(char* board, int alpha, int beta, int depth, int isMax ,int firstC
 			beta = min(v, beta);
 			if (beta < alpha || beta == alpha)
 			{
-				pruneCount++;
 				break;
 			}
 		}
@@ -83,25 +80,6 @@ int alphabeta(char* board, int alpha, int beta, int depth, int isMax ,int firstC
 	}
 }
 
-/*linkedList *getBestMoves(char *board, int player, int depth){
-	linkedList *bestMoves = newLinkedList();
-	int *scores = NULL, best = alphabeta(board, INT_MIN, INT_MAX, depth, 1, 1, &scores);
-	linkedList* moves = getMoves(board, player);
-	int cnt = 0;
-	listNode *node = moves->first;
-	while (node != NULL)
-	{
-		if (scores[cnt] == best)
-		{
-			insertNode(bestMoves, cloneNode(node));
-		}
-		node = node->next;
-		cnt++;
-	}
-	freeList(moves);
-	free(scores);
-	return bestMoves;
-}*/
 
 linkedList *getBestMoves(char *board, int player, int depth){
 	linkedList *bestMoves = newLinkedList();

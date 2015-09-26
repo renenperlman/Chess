@@ -28,21 +28,10 @@ typedef struct {
 	int y;
 }pos;
 
-/*typedef struct {
-	char type;
-	int color; // 1 - white, 0 - black
-	char moved; // 0 - hasn't moved yet, 1 - moved
-	pos position;
-	char singleMove; // 0 - piece can move multiple times in the same direction, 1 - can't
-	int numOfDirections; // the number of possible directions the piece can move
-	int *directions; // an arry with the directions the piece can move in (using 10x12 mailbox)
-	int captured; // 0 - piece is still in game, 1 - piece is dead
-}piece;*/
-
 typedef struct {
 	pos origin;
 	pos dest;
-	int capture; // 0 - not a capture move, 1 - capture move
+	char promType;
 }move;
 
 /* Prototype for basic functions */
@@ -58,7 +47,7 @@ listNode* removeNode(linkedList*, listNode*, listNode*); // removes the given no
 															// returns the updated curr node
 int posToInd(pos); // returns the mailbox number of the given location
 pos indToPos(int); // returns the position of the given mailbox number
-move* newMove(pos, pos, int);
+move* newMove(pos, pos,char);
 linkedList* newLinkedList();
 int compPos(pos, pos); // returns 1 if same position, o.w. 0
 int isLegalPos(pos); // returns 1 if the position is legal, o.w. 0

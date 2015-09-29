@@ -1,7 +1,7 @@
 ﻿#include "Minimax.h"
 
 
-int alphabeta(char* board, int alpha, int beta, int depth, int isMax ,int firstCall, int **scores){
+int alphabeta(char* board, int *alpha, int *beta, int depth, int isMax ,int firstCall, int **scores, int (score)(char*,int)){
 	if (depth == 0)
 	{
 		return score(board, nextPlayer);
@@ -28,27 +28,26 @@ int alphabeta(char* board, int alpha, int beta, int depth, int isMax ,int firstC
 			free(moves);
 			return score(board, nextPlayer);
 		}
-		char* newBoard = (char*)malloc(120 * sizeof(char));
 		while (node!=NULL)
 		{
-			memcpy(newBoard, board, 120 * sizeof(char));
-			makeMove((move*)node->data, newBoard);
-			v2 = alphabeta(newBoard, alpha, beta, depth - 1, 0, 0, scores);
+			int tempAlpha = *alpha, tempBeta = *beta;
+			char otherType = board[posToInd(((move*)node->data)->dest)];
+			makeMove((move*)node->data, board);
+			v2 = alphabeta(board, &tempAlpha, &tempBeta, depth - 1, 0, 0, scores, score);
+			unmakeMove(node->data, board, otherType);
 			if (firstCall){
 				(*scores)[i] = v2;
 				i++;
 			}
 			node = removeNode(moves, NULL, node);
-
 			v = max(v, v2);
-			alpha = max(v, alpha);
-			if (beta < alpha || beta == alpha)
+			*alpha = max(v, tempAlpha);
+			if (*beta < *alpha || *beta == *alpha)
 			{
 				break;
 			}
 		}
 		freeList(moves);
-		free(newBoard);
 		return v;
 	}
 	else
@@ -61,52 +60,52 @@ int alphabeta(char* board, int alpha, int beta, int depth, int isMax ,int firstC
 			free(moves);
 			return score(board, nextPlayer);
 		}
-		char* newBoard = (char*)malloc(120 * sizeof(char));
 		while (node != NULL)
 		{
-			memcpy(newBoard, board, 120 * sizeof(char));
-			makeMove((move*)node->data, newBoard);
-			v = min(v, alphabeta(newBoard, alpha, beta, depth - 1, 1, 0, scores));
+			int tempAlpha = *alpha, tempBeta = *beta;
+			char otherType = board[posToInd(((move*)node->data)->dest)];
+			makeMove((move*)node->data, board);
+			v = min(v, alphabeta(board, &tempAlpha, &tempBeta, depth - 1, 1, 0, scores, score));
+			unmakeMove(node->data, board, otherType);
 			node = removeNode(moves, NULL, node);
-			beta = min(v, beta);
-			if (beta < alpha || beta == alpha)
+			*beta = min(v, tempBeta);
+			if (*beta < *alpha || *beta == *alpha)
 			{
 				break;
 			}
 		}
-		free(newBoard);
 		freeList(moves);
 		return v;
 	}
 }
 
 
-linkedList *getBestMoves(char *board, int player, int depth){
+linkedList *getBestMoves(char *board, int player, int depth, int (score)(char*, int)){
 	linkedList *bestMoves = newLinkedList();
-	int *scores = NULL, best = alphabeta(board, INT_MIN, INT_MAX, depth, 1, 1, &scores);
+	int alpha = INT_MIN, beta = INT_MAX;
+	int *scores = NULL, best = alphabeta(board, &alpha, &beta, depth, 1, 1, &scores,score);
 	linkedList* moves = getMoves(board, player);
 	int cnt = 0;
 	listNode *node = moves->first;
-	char* newBoard = (char*)malloc(120 * sizeof(char));
 	while (node != NULL)
 	{
 		if (scores[cnt] == best)
 		{
 			move *m = node->data;
-			memcpy(newBoard, board, 120 * sizeof(char));
-			makeMove(m, newBoard);
-			if (alphabeta(newBoard, INT_MIN, INT_MAX, depth - 1, 0, 0, &scores) == best)
+			char otherType = board[posToInd(m->dest)];
+			makeMove(m, board);
+			alpha = INT_MIN, beta = INT_MAX;
+			if (alphabeta(board, &alpha, &beta, depth - 1, 0, 0, &scores, score) == best)
 			{
 				insertNode(bestMoves, cloneNode(node));
 			}
-			
+			unmakeMove(m, board, otherType);
 		}
 		node = node->next;
 		cnt++;
 	}
 	freeList(moves);
 	free(scores);
-	free(newBoard);
 	return bestMoves;
 }
 

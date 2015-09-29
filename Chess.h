@@ -59,7 +59,5 @@ extern int depth;
 extern int userColor;
 extern int nextPlayer;
 
-extern char whiteInCheck;
-extern char blackInCheck;
 
 #endif 

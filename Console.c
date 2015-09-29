@@ -15,6 +15,8 @@ char board[120] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 					-1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
 
+
+
 /*clears the board and the pieces*/
 void clear(){
 	for (int i = 0; i < 8; i++)
@@ -299,6 +301,8 @@ int settingMode(){
 	return 0;
 }
 
+
+
 /* the main loop for user's turn
 returns 1 if the game is over, otherwise returns 0*/
 int userTurn(int player){
@@ -340,17 +344,20 @@ int userTurn(int player){
 			}
 			linkedList *moves = newLinkedList();
 			genMoves(position, moves, board);
-			if (isCheck(board,player))
-			{
-				updateMoveList(moves, player, board);
-			}
 			printMoves(moves);
 			freeList(moves);
 		}
 		else if (strncmp(input, "get_best_moves",14) == 0) // get best moves
 		{
-			linkedList *bestMoves = getBestMoves(board, player, input[15] - '0'); // !!! change this to include best difficulty !!!
-			//printf("prune count = %d\n", pruneCount);
+			linkedList *bestMoves;
+			if (input[15] == 'b')
+			{
+				bestMoves = getBestMoves(board, player, 3, scoreBest);
+			}
+			else
+			{
+				bestMoves = getBestMoves(board, player, input[15] - '0', score);
+			}
 			printMoves(bestMoves);
 			freeList(bestMoves);
 		}
@@ -359,13 +366,31 @@ int userTurn(int player){
 			int d = input[10] - '1';
 			char* newBoard = (char*)malloc(120 * sizeof(char));
 			memcpy(newBoard, board, 120 * sizeof(char));
-			move *m = parseMove(input + 12,player);
+			move *m;
+			if (d == 'b'-'1')
+			{
+				m = parseMove(input + 15, player);
+			}
+			else
+			{
+				m = parseMove(input + 12, player);
+			}
 			makeMove(m, newBoard);
-			int *scores = NULL, score = alphabeta(newBoard, INT_MIN, INT_MAX, d, 0, 0, &scores);
+			int *scores = NULL, s;
+			int alpha = INT_MIN;
+			int beta = INT_MAX;
+			if (d == 'b' - '1')
+			{
+				s = alphabeta(newBoard, &alpha, &beta, 2, 0, 0, &scores, scoreBest);
+			}
+			else
+			{
+				s = alphabeta(newBoard, &alpha, &beta, d, 0, 0, &scores, score);
+			}
 			free(scores);
 			free(newBoard);
 			free(m);
-			printf("%d\n", score);
+			printf("%d\n", s);
 		}
 		else if (strncmp(input, "save", 4) == 0){ // save
 			FILE * fp = fopen(input + 5, "w");
@@ -390,7 +415,15 @@ int userTurn(int player){
 
 
 int compTurn(){
-	linkedList *bestMoves = getBestMoves(board, 1 - userColor, depth);
+	linkedList *bestMoves;
+	if (depth == 5)
+	{
+		bestMoves = getBestMoves(board, 1 - userColor,3,scoreBest);
+	}
+	else
+	{
+		bestMoves = getBestMoves(board, 1 - userColor, depth,score);
+	}
 	move *m = bestMoves->first->data;
 	print_message("Computer: move ");
 	printMove(m);
@@ -402,6 +435,7 @@ int compTurn(){
 
 int consoleMode(){
 	initMailBox120();
+	initBestTable();
 	print_board(board);
 	int n = settingMode();
 	while (n==0)

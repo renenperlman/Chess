@@ -51,14 +51,13 @@ move* newMove(pos, pos,char);
 linkedList* newLinkedList();
 int compPos(pos, pos); // returns 1 if same position, o.w. 0
 int isLegalPos(pos); // returns 1 if the position is legal, o.w. 0
-//piece* newPiece(char, int, pos);
 void printMove(move *);
 void printMoves(linkedList*);
 void initMailBox120();
 void set(char*, pos, char, int);
-//void initPiece(piece*, char , int, pos);
 
 extern int mailbox[];
+
 
 #endif 
 

@@ -3,8 +3,8 @@
 #include "Engine.h"
 #include <limits.h>
 
-linkedList *getBestMoves(char*,int,int);
-int alphabeta(char*, int , int , int , int , int , int **);
+linkedList *getBestMoves(char*,int,int,int (score)(char*,int));
+int alphabeta(char*, int*, int*, int, int, int, int **, int (score)(char*, int));
 
 
 #endif 

@@ -7,24 +7,6 @@ int rookScore = 500;
 int queenScore = 900;
 int kingScore = 20000;
 
-pos lastPosKingW = { 'e', 1 };
-pos lastPosKingB = { 'e', 8 };
-
-int isKingInBoard(char* board, int color){
-	pos p = color == WHITE ? lastPosKingW : lastPosKingB;
-	int ind = posToInd(p);
-	char type = color == WHITE ? WHITE_K : BLACK_K;
-	for (int i = -1; i <= 1; i++)
-	{
-		for (int j = -1; j <= 1; j++)
-		{
-			if (board[ind + 10 * i + j] == type){
-				return 1;
-			}
-		}
-	}
-	return 0;
-}
 
 int pawnTable[64] = {  0,  0,  0,  0,  0,  0,  0,  0,
 					  50, 50, 50, 50, 50, 50, 50, 50,
@@ -72,20 +54,6 @@ int queenTable[64] = { -20, -10, -10, -5, -5, -10, -10, -20,
 -20, -10, -10, -5, -5, -10, -10, -20 };
 
 int board64[64];
-/*int sortedBoard[64] = { 21, 22, 23, 24, 25, 26, 27, 28,
-38, 48, 58, 68, 78, 88, 98,
-97, 96, 95, 94, 93, 92, 91,
-81, 71, 61, 51, 41, 31,
-32, 33, 34, 35, 36, 37,
-47, 57, 67, 77, 87,
-86, 85, 84, 83, 82,
-72, 62, 52, 42,
-43, 44, 45, 46,
-56, 66, 76,
-75, 74, 73,
-63, 53,
-54, 55,
-65, 64 };*/
 
 void initBestTable(){
 	int cnt = 0;
@@ -169,78 +137,3 @@ int scoreBest(char* board,int player){
 	}
 	return score * (2 * player - 1);
 }
-
-/*linkedList* getMovesSorted(char* board, int player){
-	linkedList *moves = newLinkedList();
-	for (int i = 0; i < 64; i++)
-	{
-		if (board[colorOfLoc(board, sortedBoard[i]) == player]){
-			genMoves(indToPos(sortedBoard[i]), moves, board);
-		}
-	}
-	return moves;
-}*/
-
-/*int pvs(char *board, int depth, int alpha, int beta, int color){
-	if (depth == 0)
-	{
-		return scoreBest(board) * (2 * color - 1);
-	}
-	linkedList *moves = getMovesSorted(board, color);
-	if (moves->first == NULL)
-	{
-		free(moves);
-		return scoreBest(board) * (2 * color - 1);
-	}
-	char first = 1;
-	int s;
-	listNode *node = moves->first;
-	char* newBoard = (char*)malloc(120 * sizeof(char));
-	while (node != NULL)
-	{
-		memcpy(newBoard, board, 120 * sizeof(char));
-		makeMove((move*)node->data, newBoard);
-		if (first){
-			s = -1 * pvs(newBoard, depth - 1, -1 * beta, -1 * alpha, 1 - color);
-			first = 0;
-		}
-		else
-		{
-			s = -1 * pvs(newBoard, depth - 1, -1 * alpha - 1, -1 * alpha, 1 - color);
-			if (alpha < s || s < beta)
-			{
-				s = -1 * pvs(newBoard, depth - 1, -1 * beta , -1 * s, 1 - color);
-			}
-		}
-		free(newBoard);
-		alpha = max(alpha, s);
-		if (alpha >= beta)
-		{
-			break;
-		}
-		node = node->next;
-	}
-	freeList(moves);
-	return alpha;
-}
-
-linkedList* getBestMovesBest(char* board, int player){
-	int s = pvs(board, 4, INT_MIN, INT_MAX, player);
-	linkedList *bestMoves = newLinkedList(), *moves = getMoves(board, player);
-	listNode *node = moves->first;
-	char* newBoard = (char*)malloc(120 * sizeof(char));
-	while (node != NULL)
-	{
-		memcpy(newBoard, board, 120 * sizeof(char));
-		makeMove((move*)node->data, newBoard);
-		if (pvs(newBoard,3,INT_MIN,INT_MAX,1-player) >= s)
-		{
-			insertNode(bestMoves, cloneNode(node));
-		}
-		free(newBoard);
-		node = node->next;
-	}
-	freeList(moves);
-	return bestMoves;
-}
-*/

@@ -1,5 +1,8 @@
 ﻿#include "Engine.h"
 
+
+/*premade arrays showing the possible move directions
+for each piece with respect to the mailbox indexing*/
 int WHITE_P_DIRECTIONS[3] = { -10, -9, -11 };
 int BLACK_P_DIRECTIONS[3] = { 10, 9, 11 };
 int N_DIRECTIONS[8] = { -21, -19, -12, -8, 8, 12, 19, 21 };
@@ -9,8 +12,9 @@ int QnK_DIRECTIONS[8] = { -11, -10, -9, -1, 1, 9, 10, 11 };
 
 
 /* Return the color of the piece in the given index on the give board
-assumes that there is a piece in the location
-1 - white, 0 - black , -1 - empty*/
+1 - white
+0 - black
+-1 - empty or out of board*/
 int colorOfLoc(char* board, int ind){
 	if (board[ind] == WHITE_P || board[ind] == WHITE_B ||
 		board[ind] == WHITE_K || board[ind] == WHITE_N ||
@@ -25,7 +29,6 @@ int colorOfLoc(char* board, int ind){
 /*adds to the list nodes containing all the possible moves by the given piece*/
 void genMoves(pos p, linkedList *moves, char board[]){
 	char type = board[posToInd(p)];
-	//char* newBoard = (char*)malloc(120 * sizeof(char));
 	int color = colorOfLoc(board, posToInd(p));
 	if (type != WHITE_P && type != BLACK_P) // not a pawn
 	{
@@ -33,7 +36,7 @@ void genMoves(pos p, linkedList *moves, char board[]){
 			|| type == WHITE_B || type == BLACK_B) ? 4 : 8; // the number of possible move directions
 		int* directions;
 		char singleMove; //  a flag if the piece can move only once in a direction
-		if (type == WHITE_R || type == BLACK_R)
+		if (type == WHITE_R || type == BLACK_R) //setting the directions of the piece
 		{
 			directions = R_DIRECTIONS;
 			singleMove = 0;
@@ -58,7 +61,7 @@ void genMoves(pos p, linkedList *moves, char board[]){
 			directions = QnK_DIRECTIONS;
 			singleMove = 1;
 		}
-		for (int i = 0; i < numOfDirections; i++)
+		for (int i = 0; i < numOfDirections; i++) // making moves in each direction
 		{
 			int ind = posToInd(p);
 			while (1)
@@ -68,14 +71,13 @@ void genMoves(pos p, linkedList *moves, char board[]){
 				if (colorOfLoc(board, ind) == color) break; // same piece color
 				int capture = board[ind] == EMPTY ? 0 : 1;
 				move *m = newMove(p, indToPos(ind),0);
-				//memcpy(newBoard, board, 120 * sizeof(char));
 				char otherType = board[ind];
 				makeMove(m, board);
-				if (isCheck(board,color))
+				if (isCheck(board,color)) // if the moves exposes the kind, don't add it
 				{
-					unmakeMove(m, board, otherType);
+					unmakeMove(m, board, otherType); // revert the move
 					free(m);
-					if (singleMove || capture)
+					if (singleMove || capture) // if the given direction has been exhuasted
 					{
 						break;
 					}
@@ -83,7 +85,7 @@ void genMoves(pos p, linkedList *moves, char board[]){
 				}
 				unmakeMove(m, board, otherType);
 				insertNode(moves,newNode(m, sizeof(move))); // a possible move - add it to the list
-				if (capture) break;
+				if (capture) break; // direction exhuasted
 				if (singleMove) break; // continue to new direction
 			}
 		}
@@ -103,12 +105,11 @@ void genMoves(pos p, linkedList *moves, char board[]){
 		move *m;
 		if (board[ind + directions[0]] == EMPTY){// make a step forward
 			m = newMove(p, indToPos(ind + directions[0]),0);
-		//	memcpy(newBoard, board, 120 * sizeof(char));
 			char otherType = board[ind + directions[0]];
 			makeMove(m, board);
-			if (!isCheck(board, color))
+			if (!isCheck(board, color)) // the move doesn't expose the king
 			{
-				if ((color == WHITE && m->dest.y == 8) || (color == BLACK && m->dest.y == 1))
+				if ((color == WHITE && m->dest.y == 8) || (color == BLACK && m->dest.y == 1)) // promotion
 				{
 					unmakeMove(m, board, otherType);
 					free(m);
@@ -121,12 +122,12 @@ void genMoves(pos p, linkedList *moves, char board[]){
 					m = newMove(p, indToPos(ind + directions[0]), 'n');
 					insertNode(moves, newNode(m, sizeof(move)));
 				}
-				else{
+				else{ // regular move
 					unmakeMove(m, board, otherType);
 					insertNode(moves, newNode(m, sizeof(move)));
 				}
 			}	
-			else{
+			else{ // illegal move
 				unmakeMove(m, board, otherType);
 				free(m);
 			}
@@ -136,7 +137,6 @@ void genMoves(pos p, linkedList *moves, char board[]){
 			if (colorOfLoc(board, ind + directions[i]) == 1 - colorOfLoc(board, posToInd(p))) {// capture
 				m = newMove(p, indToPos(ind + directions[i]),0);
 				char otherType = board[ind + directions[i]];
-				//memcpy(newBoard, board, 120 * sizeof(char));
 				makeMove(m, board);
 				if (!isCheck(board, color))
 				{
@@ -144,13 +144,13 @@ void genMoves(pos p, linkedList *moves, char board[]){
 					{
 						unmakeMove(m, board, otherType);
 						free(m);
-						m = newMove(p, indToPos(ind + directions[0]), 'q');
+						m = newMove(p, indToPos(ind + directions[i]), 'q');
 						insertNode(moves, newNode(m, sizeof(move)));
-						m = newMove(p, indToPos(ind + directions[0]), 'b');
+						m = newMove(p, indToPos(ind + directions[i]), 'b');
 						insertNode(moves, newNode(m, sizeof(move)));
-						m = newMove(p, indToPos(ind + directions[0]), 'r');
+						m = newMove(p, indToPos(ind + directions[i]), 'r');
 						insertNode(moves, newNode(m, sizeof(move)));
-						m = newMove(p, indToPos(ind + directions[0]), 'n');
+						m = newMove(p, indToPos(ind + directions[i]), 'n');
 						insertNode(moves, newNode(m, sizeof(move)));
 					}
 					else{
@@ -166,7 +166,6 @@ void genMoves(pos p, linkedList *moves, char board[]){
 			}
 		}
 	}
-	//free(newBoard);
 }
 
 /*returns a list containing all the possible moves by the given player*/
@@ -204,6 +203,9 @@ void makeMove(move* m, char* board){
 	board[posToInd(m->dest)] = type;
 }
 
+/*unmaked the given move
+otherType is the state of the board before
+the piece moved into that tile*/
 void unmakeMove(move *m, char *board,char otherType){
 	char type;
 	if (m->promType == 0)
@@ -275,36 +277,6 @@ int score(char* board, int player){
 	return player==WHITE ? score : -1 * score;
 }
 
-/*promote the given pawn to the given type*/
-/*void promote(char* board, char type){
-	p->type = type;
-	if (type == WHITE_B || type == BLACK_B)
-	{
-		int directions[] = B_DIRECTIONS;
-		p->directions = directions;
-		p->numOfDirections = 4;
-		p->singleMove = 0;
-	}
-	else if (type == WHITE_N || type == BLACK_N)
-	{
-		int directions[] = N_DIRECTIONS;
-		p->directions = directions;
-		p->numOfDirections = 8;
-	}
-	else if (type == WHITE_Q || type == BLACK_Q)
-	{
-		int directions[] = QnK_DIRECTIONS;
-		p->directions = directions;
-		p->numOfDirections = 8;
-		p->singleMove = 0;
-	}
-	else{
-		int directions[] = R_DIRECTIONS;
-		p->directions = directions;
-		p->numOfDirections = 4;
-		p->singleMove = 0;
-	}
-}*/
 
 /*returns 1 if the given player threaten the given position
 otherwise, return 0*/

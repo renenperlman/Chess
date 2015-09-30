@@ -433,6 +433,7 @@ int compTurn(){
 	return endGamePrint(1 - userColor);
 }
 
+
 int consoleMode(){
 	initMailBox120();
 	initBestTable();
@@ -460,3 +461,4 @@ int consoleMode(){
 	}
 	return 1;
 }
+

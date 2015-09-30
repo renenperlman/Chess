@@ -14,7 +14,7 @@
 struct listNode{
 	void *data;
 	struct listNode *next;
-	size_t size;
+	size_t size; // size of the data
 };
 
 typedef struct listNode listNode;
@@ -31,15 +31,14 @@ typedef struct {
 typedef struct {
 	pos origin;
 	pos dest;
-	char promType;
+	char promType; // 0 if no promotion, o.w. the kind of promotion
 }move;
 
-/* Prototype for basic functions */
+/* basic functions */
 void freeNode(listNode*); // frees the given node and also its data
 void freeList(linkedList*); // frees the given linked list
 void* cloneData(void*, size_t); // copy the content of the given pointer
 listNode* cloneNode(listNode*); // copies the given node and its data
-linkedList* cloneLinkedList(linkedList*); // copies the given linked list
 listNode* newNode(void*, size_t); // guess what this one does??
 void insertNode(linkedList*, listNode*); // adds the node to the begining of the list
 listNode* removeNode(linkedList*, listNode*, listNode*); // removes the given node from the given list.
@@ -54,7 +53,7 @@ int isLegalPos(pos); // returns 1 if the position is legal, o.w. 0
 void printMove(move *);
 void printMoves(linkedList*);
 void initMailBox120();
-void set(char*, pos, char, int);
+void set(char*, pos, char, int); // sets the position with the given type. checks if legal
 
 extern int mailbox[];
 

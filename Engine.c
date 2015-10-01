@@ -230,7 +230,7 @@ int score(char* board, int player){
 		else // not in check
 		{
 			freeList(moves);
-			return -0; // tie
+			return -400; // tie
 		}
 	}
 	freeList(moves);
@@ -243,7 +243,7 @@ int score(char* board, int player){
 		else // not in check
 		{
 			freeList(moves);
-			return -0; // tie
+			return -400; // tie
 		}
 	}
 	int score = 0;

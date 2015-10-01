@@ -20,6 +20,12 @@ int alphabeta(char* board, int *alpha, int *beta, int depth, int isMax ,int firs
 				cnt++;
 			}
 			*scores = (int*)calloc(cnt, sizeof(int));
+			if (scores == NULL)
+			{
+				print_message("Error: standard function calloc has failed");
+				print_message("Terminating program");
+				exit(1);
+			}
 		}
 		int v = INT_MIN, i = 0, v2;
 		node = moves->first;

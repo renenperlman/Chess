@@ -57,29 +57,6 @@ void print_board(char* board)
 	printf("\n");
 }
 
-char * getInput(FILE * fp, size_t size){
-	char *str;
-	int ch;
-	size_t len = 0;
-	if ((str = (char *)malloc(sizeof(char)*((int)size))) == NULL){
-		printf("Memory allocation error!");
-		exit(1);
-	}
-	while (EOF != (ch = fgetc(fp)) && ch != '\n')
-	{
-		str[len++] = ch;
-		if (len == size)
-		{
-			if ((str = realloc(str, sizeof(char)*(size += 128))) == NULL){
-				printf("Memory allocation error!");
-				exit(1);
-			}
-		}
-	}
-	str[len++] = '\0';
-	return realloc(str, sizeof(char)*len);
-}
-
 move *parseMove(char* input, int player){
 	pos start = { input[6], input[8] - '0' };
 	pos dest = { input[15], input[17] - '0' };
@@ -365,6 +342,12 @@ int userTurn(int player){
 		{
 			int d = input[10] - '1';
 			char* newBoard = (char*)malloc(120 * sizeof(char));
+			if (newBoard == NULL)
+			{
+				print_message("Error: standard function malloc has failed");
+				print_message("Terminating program");
+				exit(1);
+			}
 			memcpy(newBoard, board, 120 * sizeof(char));
 			move *m;
 			if (d == 'b'-'1')

@@ -1,7 +1,7 @@
 #include "Chess.h"
 
-gameMode = 1;
-depth = 1;
-userColor = WHITE;
-nextPlayer = WHITE;
+int gameMode = 1;
+int depth = 1;
+int userColor = WHITE;
+int nextPlayer = WHITE;
 

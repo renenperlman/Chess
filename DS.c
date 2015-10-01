@@ -57,6 +57,12 @@ void freeList(linkedList* list){
 and copy the data into it*/
 void* cloneData(void* data, size_t n){
 	char* cloneData = (char*)malloc(n);
+	if (cloneData == NULL)
+	{
+		print_message("Error: standard function malloc has failed");
+		print_message("Terminating program");
+		exit(1);
+	}
 	memcpy(cloneData, data, n);
 	return cloneData;
 }
@@ -65,6 +71,12 @@ void* cloneData(void* data, size_t n){
 and also its data*/
 listNode* cloneNode(listNode* node){
 	listNode* clone = (listNode*)malloc(sizeof(listNode));
+	if (clone == NULL)
+	{
+		print_message("Error: standard function malloc has failed");
+		print_message("Terminating program");
+		exit(1);
+	}
 	char* data = cloneData(node->data, node->size);
 	clone->data = data;
 	clone->next = NULL;
@@ -75,6 +87,12 @@ listNode* cloneNode(listNode* node){
 memory for data in the given size*/
 listNode* newNode(void* data, size_t n){
 	listNode* node = (listNode*)malloc(sizeof(listNode));
+	if (node == NULL)
+	{
+		print_message("Error: standard function malloc has failed");
+		print_message("Terminating program");
+		exit(1);
+	}
 	node->data = data;
 	node->size = n;
 	node->next = NULL;
@@ -115,6 +133,12 @@ pos indToPos(int ind){
 
 move* newMove(pos origin, pos dest, char promType){
 	move* m = (move*)malloc(sizeof(move));
+	if (m == NULL)
+	{
+		print_message("Error: standard function malloc has failed");
+		print_message("Terminating program");
+		exit(1);
+	}
 	m->dest = dest;
 	m->origin = origin;
 	m->promType = promType;
@@ -124,6 +148,12 @@ move* newMove(pos origin, pos dest, char promType){
 /*creates a new empty linked list*/
 linkedList* newLinkedList(){
 	linkedList* list = (linkedList*)malloc(sizeof(linkedList));
+	if (list == NULL)
+	{
+		print_message("Error: standard function malloc has failed");
+		print_message("Terminating program");
+		exit(1);
+	}
 	list->first = NULL;
 	return list;
 }
